@@ -1,7 +1,7 @@
 {
 	"name": "obsidian-bases-timeline-view",
 	"version": "1.0.0",
-	"description": "timeline view for obsidian bases.",
+	"description": "timeline view for bases.",
 	"main": "main.js",
 	"scripts": {
 		"dev": "vite build --watch",
