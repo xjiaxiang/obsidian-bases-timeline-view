@@ -18,7 +18,7 @@
 		"timeline",
 		"view"
 	],
-	"author": "xjiaxiang86@gmail.com",
+	"author": "xjiaxiang",
 	"license": "MIT",
 	"devDependencies": {
 		"@commitlint/cli": "^20.1.0",
