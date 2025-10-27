@@ -1,0 +1,68 @@
+on:
+  workflow_run:
+    workflows: ["release-please"]
+    types:
+      - completed
+
+name: Update Plugin Version
+jobs:
+  update-version:
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Get PR information
+        id: pr-info
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.RELEASE_PLEASE_TOKEN }}
+          script: |
+            const { data: prs } = await github.rest.pulls.list({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              state: 'open',
+              base: 'master',
+              sort: 'updated',
+              direction: 'desc'
+            });
+
+            const releasePr = prs.find(pr => 
+              pr.title.includes('chore') && 
+              pr.labels.some(label => label.name.includes('autorelease'))
+            );
+
+            if (!releasePr) {
+              core.setFailed('No release PR found');
+              return;
+            }
+
+            core.setOutput('pr_number', releasePr.number);
+            core.setOutput('pr_ref', releasePr.head.ref);
+            return { prNumber: releasePr.number, prRef: releasePr.head.ref };
+
+      - name: Checkout PR branch
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ steps.pr-info.outputs.pr_ref }}
+          token: ${{ secrets.RELEASE_PLEASE_TOKEN }}
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Install pnpm
+        run: npm install -g pnpm
+
+      - name: Update version files
+        run: |
+          pnpm install --frozen-lockfile
+          pnpm run version
+
+      - name: Commit and push changes
+        env:
+          GITHUB_TOKEN: ${{ secrets.RELEASE_PLEASE_TOKEN }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add .
+          git diff --staged --quiet || (git commit -m "chore: update version files" && git push)

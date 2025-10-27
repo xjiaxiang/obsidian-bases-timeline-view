@@ -1,0 +1,50 @@
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - master
+
+permissions:
+  contents: write
+  issues: write
+  pull-requests: write
+
+name: release-please
+
+jobs:
+  release-please:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: googleapis/release-please-action@v4
+        id: release
+        with:
+          token: ${{ secrets.RELEASE_PLEASE_TOKEN }}
+          config-file: release-please-config.json
+          manifest-file: .release-please-manifest.json
+
+      - name: Checkout code
+        if: ${{ steps.release.outputs.release_created || steps.release.outputs.prs }}
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        if: ${{ steps.release.outputs.release_created }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Install pnpm
+        if: ${{ steps.release.outputs.release_created }}
+        run: npm install -g pnpm
+
+      - name: Install dependencies and build
+        if: ${{ steps.release.outputs.release_created }}
+        run: |
+          pnpm install --frozen-lockfile
+          pnpm run build
+          echo "${{ steps.release.outputs.tag_name }}"
+
+      - name: Upload Release Artifact
+        if: ${{ steps.release.outputs.release_created }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: gh release upload ${{ steps.release.outputs.tag_name }} ./dist/main.js ./dist/manifest.json ./dist/styles.css

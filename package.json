@@ -1,0 +1,39 @@
+{
+	"name": "obsidian-sample-plugin",
+	"version": "1.0.0",
+	"description": "This is a sample plugin for Obsidian (https://obsidian.md)",
+	"main": "main.js",
+	"scripts": {
+		"dev": "vite build --watch",
+		"build": "vite build && cp manifest.json dist/",
+		"version": "node version-bump.mjs && git add manifest.json versions.json",
+		"lint": "oxlint . && eslint .",
+		"lint:fix": "oxlint . --fix && eslint . --fix",
+		"test": "vitest run --passWithNoTests",
+		"prepare": "husky"
+	},
+	"keywords": [],
+	"author": "xjiaxiang86@gmail.com",
+	"license": "MIT",
+	"devDependencies": {
+		"@commitlint/cli": "^20.1.0",
+		"@commitlint/config-conventional": "^20.0.0",
+		"@eslint/js": "^9.38.0",
+		"@types/node": "^22.7.5",
+		"builtin-modules": "5.0.0",
+		"eslint": "^9.38.0",
+		"eslint-config-prettier": "^10.1.8",
+		"eslint-plugin-oxlint": "^1.24.0",
+		"eslint-plugin-prettier": "^5.5.4",
+		"husky": "^9.1.6",
+		"lint-staged": "^16.2.5",
+		"memfs": "^4.49.0",
+		"obsidian": "latest",
+		"oxlint": "^1.24.0",
+		"prettier": "^3.6.2",
+		"tslib": "^2.8.1",
+		"typescript": "^5.9.3",
+		"vite": "^7.1.11",
+		"vitest": "^3.2.4"
+	}
+}

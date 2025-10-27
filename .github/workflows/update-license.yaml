@@ -1,0 +1,23 @@
+# schedule to run every two month on the 1st day
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 0 1 */2 *"
+
+name: Update license
+jobs:
+  update-license:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: |
+          node scripts/update-license.mjs
+
+      # if there is an uncommited changes, commit them
+      - name: Commit changes
+        run: |
+          if git diff --quiet; then
+            git add .
+            git commit -m "Update license year"
+            git push
+          fi
