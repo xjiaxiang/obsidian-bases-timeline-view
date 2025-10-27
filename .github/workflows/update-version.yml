@@ -31,34 +31,41 @@ jobs:
             );
 
             if (!releasePr) {
-              core.setFailed('No release PR found');
+              core.warning('No release PR found. Skipping version update.');
+              core.setOutput('found', 'false');
               return;
             }
 
+            core.setOutput('found', 'true');
             core.setOutput('pr_number', releasePr.number);
             core.setOutput('pr_ref', releasePr.head.ref);
             return { prNumber: releasePr.number, prRef: releasePr.head.ref };
 
       - name: Checkout PR branch
+        if: steps.pr-info.outputs.found == 'true'
         uses: actions/checkout@v4
         with:
           ref: ${{ steps.pr-info.outputs.pr_ref }}
           token: ${{ secrets.RELEASE_PLEASE_TOKEN }}
 
       - name: Set up Node.js
+        if: steps.pr-info.outputs.found == 'true'
         uses: actions/setup-node@v4
         with:
           node-version: 22
 
       - name: Install pnpm
+        if: steps.pr-info.outputs.found == 'true'
         run: npm install -g pnpm
 
       - name: Update version files
+        if: steps.pr-info.outputs.found == 'true'
         run: |
           pnpm install --frozen-lockfile
           pnpm run version
 
       - name: Commit and push changes
+        if: steps.pr-info.outputs.found == 'true'
         env:
           GITHUB_TOKEN: ${{ secrets.RELEASE_PLEASE_TOKEN }}
         run: |
