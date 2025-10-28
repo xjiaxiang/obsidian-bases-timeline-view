@@ -20,9 +20,14 @@ export function drawVisTimeline(
 		...options,
 		template: function (item: DataItem, _element: HTMLElement) {
 			const eventContainer = document.createElement('div');
-			eventContainer.innerHTML = item.content || '';
-			const eventCard = eventContainer.createDiv();
-			eventCard.outerHTML = item.title || '';
+
+			if (item.content) {
+				const parsed = new DOMParser().parseFromString(
+					item.content,
+					'text/html',
+				);
+				eventContainer.append(...Array.from(parsed.body.childNodes));
+			}
 
 			return eventContainer;
 		},

@@ -32,21 +32,9 @@ export class TimelineProperties {
 	}
 
 	getContentForDraw(): string {
-		const container = document.createElement('div');
-
-		const dateDescription = document.createElement('span');
-		dateDescription.textContent = this.getDateDescription() || '';
-		container.appendChild(dateDescription);
-
-		container.appendChild(document.createElement('br'));
-
-		const a = document.createElement('a');
-		a.className = 'internal-link';
-		a.href = this.entry.file.path;
-		a.textContent = this.content || '';
-		container.appendChild(a);
-
-		return container.outerHTML;
+		return `${this.getDateDescription() || ''}<br><a href=${JSON.stringify(
+			this.entry.file.path,
+		)} class="internal-link">${this.content || ''}</a>`;
 	}
 
 	private getDateDescription() {
