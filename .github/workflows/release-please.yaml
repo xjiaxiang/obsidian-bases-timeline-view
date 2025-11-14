@@ -23,7 +23,7 @@ jobs:
           manifest-file: .release-please-manifest.json
 
       - name: Checkout code
-        if: ${{ steps.release.outputs.release_created || steps.release.outputs.prs }}
+        if: ${{ steps.release.outputs.release_created}}
         uses: actions/checkout@v4
 
       - name: Set up Node.js

@@ -30,12 +30,14 @@ Tips:
 
 - you can also define the code using bases formula.
 - basically, `start` and `end` should be `Date` type, but if your `start` is something unusual, for example "2025" or "2025-01", you should use `String` type
+- if your Obsidian is 1.10 or later, you can use `group by` to group the timeline items. for example:
+  ![example](./docs/group-example.jpg)
 
 ## Installation
 
 Two ways to install:
 
-- Install from Obsidian Community Plugin
+- Install from Obsidian Community Plugin（Not released yet）
 - Manual install
   - Download the latest release from [GitHub Releases](https://github.com/xjiaxiang/obsidian-bases-timeline-view/releases)
   - Unzip the release and copy the `bases-timeline-view` folder to your Obsidian plugins folder
