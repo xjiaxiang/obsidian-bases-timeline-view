@@ -1,7 +1,7 @@
 {
 	"id": "bases-timeline-view",
 	"name": "Bases Timeline View",
-	"version": "1.1.0",
+	"version": "1.1.1",
 	"minAppVersion": "1.9.0",
 	"description": "timeline view for bases.",
 	"author": "xjiaxiang86@gmail.com",
