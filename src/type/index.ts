@@ -34,9 +34,9 @@ export class TimelineProperties {
 	}
 
 	getContentForDraw(): string {
-		return `${this.getDateDescription() || ''}<br><a href=${JSON.stringify(
-			this.entry.file.path,
-		)} class="internal-link">${this.content || ''}</a>`;
+		return `${this.getDateDescription() || ''}<br><a href=${
+			this.entry.file.path
+		} class="internal-link">${this.content || ''}</a>`;
 	}
 
 	private getDateDescription() {

@@ -34,5 +34,6 @@ export function drawVisTimeline(
 			return eventContainer;
 		},
 	});
+
 	return timeline;
 }
