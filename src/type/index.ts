@@ -1,4 +1,4 @@
-import { App, BasesEntry, Value, moment } from 'obsidian';
+import { BasesEntry, BasesViewConfig, Value, moment } from 'obsidian';
 import { logger } from '../helper/logger';
 
 /**
@@ -22,9 +22,11 @@ export class TimelineProperties {
 	 */
 	public content?: string;
 
+	private config: BasesViewConfig;
 	private entry: BasesEntry;
-	constructor(entry: BasesEntry) {
+	constructor(entry: BasesEntry, config: BasesViewConfig) {
 		this.entry = entry;
+		this.config = config;
 	}
 
 	isValid(): boolean {
@@ -52,9 +54,7 @@ export class TimelineProperties {
 	}
 
 	getStartForDisplay(): string {
-		const display =
-			this.entry.getValue('note.startLabel') ||
-			this.entry.getValue('formula.startLabel');
+		const display = getStartLabel(this.entry, this.config);
 		if (display && display.isTruthy()) {
 			return display.toString();
 		}
@@ -63,9 +63,7 @@ export class TimelineProperties {
 	}
 
 	getEndForDisplay() {
-		const display =
-			this.entry.getValue('note.endLabel') ||
-			this.entry.getValue('formula.endLabel');
+		const display = getEndLabel(this.entry, this.config);
 		if (display && display.isTruthy()) {
 			return display.toString();
 		}
@@ -76,19 +74,21 @@ export class TimelineProperties {
 	/**
 	 * create the timeline properties from the entry
 	 */
-	static fromEntry(entry: BasesEntry): TimelineProperties {
-		const properties = new TimelineProperties(entry);
+	static fromEntry(
+		entry: BasesEntry,
+		config: BasesViewConfig,
+	): TimelineProperties {
+		const properties = new TimelineProperties(entry, config);
 
 		const { start, end } = getValidDate(
-			entry.getValue('note.start') || entry.getValue('formula.start'),
-			entry.getValue('note.end') || entry.getValue('formula.end'),
+			getStartDate(entry, config),
+			getEndDate(entry, config),
 		);
 
 		properties.start = start;
 		properties.end = end;
 
-		const content =
-			entry.getValue('note.content') || entry.getValue('formula.content');
+		const content = getContent(entry, config);
 		properties.content =
 			!!content && content.isTruthy()
 				? content.toString()
@@ -96,6 +96,53 @@ export class TimelineProperties {
 
 		return properties;
 	}
+}
+
+function getStartDate(entry: BasesEntry, config: BasesViewConfig) {
+	const customeStartField = config.getAsPropertyId('startField');
+	if (customeStartField) {
+		return entry.getValue(customeStartField);
+	}
+
+	return entry.getValue('note.start') || entry.getValue('formula.start');
+}
+
+function getEndDate(entry: BasesEntry, config: BasesViewConfig) {
+	const customeEndField = config.getAsPropertyId('endField');
+	if (customeEndField) {
+		return entry.getValue(customeEndField);
+	}
+
+	return entry.getValue('note.end') || entry.getValue('formula.end');
+}
+
+function getContent(entry: BasesEntry, config: BasesViewConfig) {
+	const customeContentField = config.getAsPropertyId('contentField');
+	if (customeContentField) {
+		return entry.getValue(customeContentField);
+	}
+
+	return entry.getValue('note.content') || entry.getValue('formula.content');
+}
+
+function getStartLabel(entry: BasesEntry, config: BasesViewConfig) {
+	const customeStartLabelField = config.getAsPropertyId('startLabelField');
+	if (customeStartLabelField) {
+		return entry.getValue(customeStartLabelField);
+	}
+
+	return (
+		entry.getValue('note.startLabel') || entry.getValue('formula.startLabel')
+	);
+}
+
+function getEndLabel(entry: BasesEntry, config: BasesViewConfig) {
+	const customeEndLabelField = config.getAsPropertyId('endLabelField');
+	if (customeEndLabelField) {
+		return entry.getValue(customeEndLabelField);
+	}
+
+	return entry.getValue('note.endLabel') || entry.getValue('formula.endLabel');
 }
 
 function getValidDate(start: Value | null, end?: Value | null) {

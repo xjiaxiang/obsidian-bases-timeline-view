@@ -19,6 +19,11 @@ export class TimelineView extends BasesView {
 		this.containerEl.empty();
 
 		// render
-		drawVisTimeline(this.containerEl, this.data.groupedData);
+		drawVisTimeline(
+			this.containerEl,
+			this.data.groupedData,
+			this.config,
+			this.app,
+		);
 	}
 }

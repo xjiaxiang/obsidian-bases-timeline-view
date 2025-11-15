@@ -1,4 +1,4 @@
-import { App, BasesEntryGroup } from 'obsidian';
+import { BasesEntryGroup, BasesViewConfig } from 'obsidian';
 import { DataSet } from 'vis-data';
 import { DataGroup, DataItem } from 'vis-timeline';
 import { logger } from './logger';
@@ -16,6 +16,7 @@ export type ConvertToVisDataResult = {
  */
 export function convertToVisData(
 	groupedData: BasesEntryGroup[],
+	config: BasesViewConfig,
 ): ConvertToVisDataResult {
 	const items = new DataSet<DataItem>();
 	const groups = new DataSet<DataGroup>();
@@ -29,7 +30,7 @@ export function convertToVisData(
 		});
 
 		gd.entries.forEach((entry) => {
-			const properties = TimelineProperties.fromEntry(entry);
+			const properties = TimelineProperties.fromEntry(entry, config);
 
 			if (!properties.isValid()) {
 				logger.warn(`skip invalid entry ${entry.file.basename}`);

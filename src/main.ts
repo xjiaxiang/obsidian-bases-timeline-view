@@ -17,6 +17,38 @@ export default class BasesTimelineViewPlugin extends Plugin {
 			factory: (controller: QueryController, parentEl: HTMLElement) => {
 				return new TimelineView(controller, parentEl);
 			},
+			options: () => [
+				{
+					key: 'startField',
+					type: 'property',
+					displayName: 'Start field',
+					default: 'note.start',
+				},
+				{
+					key: 'endField',
+					type: 'property',
+					displayName: 'End field',
+					default: 'note.end',
+				},
+				{
+					key: 'contentField',
+					type: 'property',
+					displayName: 'Content field',
+					default: 'note.content',
+				},
+				{
+					key: 'startLabelField',
+					type: 'property',
+					displayName: 'Start label field',
+					default: 'note.startLabel',
+				},
+				{
+					key: 'endLabelField',
+					type: 'property',
+					displayName: 'End label field',
+					default: 'note.endLabel',
+				},
+			],
 		});
 	}
 

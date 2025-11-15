@@ -1,6 +1,6 @@
 import type { DataItem, TimelineOptions } from 'vis-timeline/esnext';
 import { Timeline } from 'vis-timeline/esnext';
-import { BasesEntryGroup } from 'obsidian';
+import { App, BasesEntryGroup, BasesViewConfig } from 'obsidian';
 import { convertToVisData } from './convert-to-vis-data';
 
 import 'vis-timeline/styles/vis-timeline-graph2d.css';
@@ -10,9 +10,11 @@ import 'vis-timeline/styles/vis-timeline-graph2d.css';
 export function drawVisTimeline(
 	containerEl: HTMLElement,
 	data: BasesEntryGroup[],
+	config: BasesViewConfig,
+	app: App,
 	options: TimelineOptions = {},
 ) {
-	const { items, groups } = convertToVisData(data);
+	const { items, groups } = convertToVisData(data, config);
 
 	const timeline = new Timeline(containerEl, items, groups, {
 		showCurrentTime: false,
