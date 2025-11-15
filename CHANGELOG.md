@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.1.1](https://github.com/xjiaxiang/obsidian-bases-timeline-view/compare/1.1.0...1.1.1) (2025-11-15)
+
+
+### Bug Fixes
+
+* apply json.stringify to file path ([73c8520](https://github.com/xjiaxiang/obsidian-bases-timeline-view/commit/73c85209984dcb7aaf05196c1bad96db850266a4))
+
 ## [1.1.0](https://github.com/xjiaxiang/obsidian-bases-timeline-view/compare/1.0.0...1.1.0) (2025-11-15)
 
 
