@@ -1,5 +1,6 @@
 import { BasesView, QueryController } from 'obsidian';
 import { drawVisTimeline } from '../helper/draw-vis-timeline';
+import { logger } from '../helper/logger';
 
 /**
  * Timeline view for obsidian bases
@@ -28,7 +29,9 @@ export class TimelineView extends BasesView {
 				// JSON.stringify adds quotes, so we need to remove them
 				// const filepath = href.replace(/^["']|["']$/g, '');
 				const filepath = href;
-				this.app.workspace.openLinkText(filepath, '', 'tab');
+				this.app.workspace.openLinkText(filepath, '', 'tab').catch((error) => {
+					logger.error(error);
+				});
 			}
 		});
 	}

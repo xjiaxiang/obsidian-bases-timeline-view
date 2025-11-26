@@ -4,7 +4,7 @@ import { TimelineView } from './ui/timeline-view';
 import './timeline.css';
 
 export default class BasesTimelineViewPlugin extends Plugin {
-	async onload() {
+	onload() {
 		this.registerView();
 	}
 
