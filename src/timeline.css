@@ -75,3 +75,15 @@
 	font-family: 'Comic Sans MS' !important;
 	font-size: 15px !important;
 }
+
+.theme-dark .vis-item {
+	background-color: rgba(144, 170, 252, 0.4);
+}
+
+.theme-dark .vis-item.vis-selected {
+	background-color: rgba(255, 247, 133, 0.4);
+}
+
+.theme-dark .vis-item {
+	color: var(--text-normal);
+}
