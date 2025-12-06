@@ -34,9 +34,12 @@ export class TimelineProperties {
 	}
 
 	getContentForDraw(): string {
-		return `${this.getDateDescription() || ''}<br><a href=${JSON.stringify(
-			this.entry.file.path,
-		)} class="internal-link">${this.content || ''}</a>`;
+		const path = this.entry.file.path;
+		// HTML escape special characters in the path
+		// This ensures paths with spaces and special characters are handled correctly
+		const escapedPath = escapeHtml(path);
+
+		return `${this.getDateDescription() || ''}<br><a href="${escapedPath}" class="internal-link">${this.content || ''}</a>`;
 	}
 
 	private getDateDescription() {
@@ -194,4 +197,18 @@ function normalizeDate(date: string): string | undefined {
 
 function sortDates(dates: string[]): string[] {
 	return dates.sort();
+}
+
+/**
+ * Escape HTML special characters in a string
+ * This ensures strings with special characters are safely used in HTML attributes
+ * @param text - The text to escape
+ * @returns The escaped text with HTML entities
+ */
+function escapeHtml(text: string): string {
+	return text
+		.replace(/&/g, '&amp;')
+		.replace(/</g, '&lt;')
+		.replace(/>/g, '&gt;')
+		.replace(/"/g, '&quot;');
 }
