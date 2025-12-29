@@ -81,7 +81,7 @@ if your Obsidian is 1.10 or later, you can use `group by` to group the timeline 
 
 ## Installation
 
-Two ways to install:
+Three ways to install:
 
 - Install from Obsidian Community Plugin（Not released yet）
 - Manual install
@@ -90,6 +90,14 @@ Two ways to install:
   - Move the downloaded files to the new folder
   - Reload Obsidian
   - Enable the plugin in **Settings → Community plugins**
+- Install from BRAT(Currently Recommended)
+  - Install [BRAT](https://github.com/TfTHacker/obsidian42-brat) if you haven't installed it yet.
+  - Enable BRAT in **Settings → Community plugins**
+  - Open Command Palette(Ctrl+P) and type `BRAT: Plugins: Add a beta plugin for test` to open the Community Plugin Manager.
+  - input the plugin repository url: https://github.com/xjiaxiang/obsidian-bases-timeline-view
+  - select the latest version
+  - click `Add plugin` button to install the plugin.
+  - enable `bases-timeline-view` plugin in **Settings → Community plugins** if it's not enabled automatically.
 
 ## Others
 
