@@ -107,7 +107,13 @@ function getStartDate(entry: BasesEntry, config: BasesViewConfig) {
 		return entry.getValue(customeStartField);
 	}
 
-	return entry.getValue('note.start') || entry.getValue('formula.start');
+	return (
+		entry.getValue('note.start') ||
+		entry.getValue('formula.start') ||
+		// 支持 date 字段
+		entry.getValue('note.date') ||
+		entry.getValue('formula.date')
+	);
 }
 
 function getEndDate(entry: BasesEntry, config: BasesViewConfig) {

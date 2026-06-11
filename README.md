@@ -42,13 +42,14 @@ if you want to use the default properties, here is a quick look of the default p
 
 Here is the explanation of the properties that we used:
 
-| Property   | Description                         | Required | Example           | Remark                                |
-| ---------- | ----------------------------------- | -------- | ----------------- | ------------------------------------- |
-| start      | the start date of the item          | no       | 2025-01-01        |                                       |
-| end        | the end date of the item            | no       | 2025-01-04        |                                       |
-| content    | the content of the item             | no       | title of the item | if not set, it will use the file name |
-| startLabel | custom label for display start date | no       | start             |                                       |
-| endLabel   | custom label for display end date   | no       | end               |                                       |
+| Property   | Description                         | Required | Example           | Remark                                          |
+| ---------- | ----------------------------------- | -------- | ----------------- | ----------------------------------------------- |
+| start      | the start date of the item          | no       | 2025-01-01        |                                                 |
+| date       | the start date of the item          | no       | 2025-01-01        | if start is not set, it will use the date field |
+| end        | the end date of the item            | no       | 2025-01-04        |                                                 |
+| content    | the content of the item             | no       | title of the item | if not set, it will use the file name           |
+| startLabel | custom label for display start date | no       | start             |                                                 |
+| endLabel   | custom label for display end date   | no       | end               |                                                 |
 
 ### Custom Field
 
