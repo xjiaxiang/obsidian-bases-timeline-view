@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.2.0](https://github.com/xjiaxiang/obsidian-bases-timeline-view/compare/1.1.1...1.2.0) (2026-06-11)
+
+
+### Features
+
+* read 'date' field if `start` is not setted ([646ec01](https://github.com/xjiaxiang/obsidian-bases-timeline-view/commit/646ec010500e71a25bb275b75016ff2748a8e849))
+
 ## [1.1.1](https://github.com/xjiaxiang/obsidian-bases-timeline-view/compare/1.1.0...1.1.1) (2025-11-15)
 
 
