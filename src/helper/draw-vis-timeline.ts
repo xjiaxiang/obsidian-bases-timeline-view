@@ -19,6 +19,7 @@ export function drawVisTimeline(
 	const timeline = new Timeline(containerEl, items, groups, {
 		showCurrentTime: false,
 		showTooltips: false,
+		selectable: false,
 		...options,
 		template: function (item: DataItem, _element: HTMLElement) {
 			const eventContainer = document.createElement('div');
@@ -29,6 +30,11 @@ export function drawVisTimeline(
 					'text/html',
 				);
 				eventContainer.append(...Array.from(parsed.body.childNodes));
+
+				// 给本 item 里的每个链接挂事件
+				eventContainer.querySelectorAll('a.internal-link').forEach((link) => {
+					link.addEventListener('mousedown', (e) => e.stopPropagation());
+				});
 			}
 
 			return eventContainer;

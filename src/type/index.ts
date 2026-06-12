@@ -39,7 +39,7 @@ export class TimelineProperties {
 		// This ensures paths with spaces and special characters are handled correctly
 		const escapedPath = escapeHtml(path);
 
-		return `${this.getDateDescription() || ''}<br><a href="${escapedPath}" class="internal-link">${this.content || ''}</a>`;
+		return `${this.getDateDescription() || ''}<br><a href="${escapedPath}" class="internal-link" data-href="${escapedPath}">${this.content || ''}</a>`;
 	}
 
 	private getDateDescription() {

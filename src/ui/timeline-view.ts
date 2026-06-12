@@ -34,6 +34,23 @@ export class TimelineView extends BasesView {
 				});
 			}
 		});
+
+		this.registerDomEvent(this.containerEl, 'mouseover', (evt) => {
+			const link = (evt.target as HTMLElement).closest('a.internal-link');
+			if (!link) {
+				return;
+			}
+			evt.stopPropagation(); // 防止 vis-timeline 拦截
+			this.app.workspace.trigger('hover-link', {
+				event: evt,
+				source: 'bases-timeline-view',
+				hoverParent: this, // BasesView 继承 Component，可作 hoverParent
+				targetEl: link as HTMLElement,
+				linktext:
+					link.getAttribute('data-href') || link.getAttribute('href') || '',
+				sourcePath: '',
+			});
+		});
 	}
 
 	public onDataUpdated(): void {

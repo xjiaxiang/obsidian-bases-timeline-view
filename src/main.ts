@@ -6,6 +6,11 @@ import './timeline.css';
 export default class BasesTimelineViewPlugin extends Plugin {
 	onload() {
 		this.registerView();
+
+		this.registerHoverLinkSource('bases-timeline-view', {
+			display: 'Bases Timeline View',
+			defaultMod: true, // 与 Obsidian 设置一致：是否需要 Cmd/Ctrl
+		});
 	}
 
 	onunload() {}
