@@ -76,6 +76,27 @@ Make sure that the properties you used are defined in your obsidian file.
 if your Obsidian is 1.10 or later, you can use `group by` to group the timeline items. for example:
 ![example](./docs/group-example.jpg)
 
+### Custom Style
+
+we added tags and frontmatter to the timeline item's `data-` attributes, you can use these attributes to style the timeline items. for example:
+
+```css
+.vis-item:has(.timeline-item[data-tags~='#projects']) {
+	border-width: 1px;
+	border-style: solid;
+}
+
+.vis-item:has(
+	.timeline-item[data-tags~='#projects'][data-status='not started']
+) {
+	background-color: rgba(211, 211, 211, 0.45);
+	border-color: #d3d3d3;
+}
+```
+
+- `#projects` is a tag, you can use any tag you want
+- `data-status="not started"` is a frontmatter(status), you can use any frontmatter you want
+
 ## Tips
 
 - basically, `start` and `end` should be `Date` type, but if your `start` is something unusual, for example "2025" or "2025-01", you should use `String` type
