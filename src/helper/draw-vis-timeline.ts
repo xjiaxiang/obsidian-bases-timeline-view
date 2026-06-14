@@ -14,7 +14,7 @@ export function drawVisTimeline(
 	app: App,
 	options: TimelineOptions = {},
 ) {
-	const { items, groups } = convertToVisData(data, config);
+	const { items, groups } = convertToVisData(data, config, app);
 
 	const timeline = new Timeline(containerEl, items, groups, {
 		showCurrentTime: false,

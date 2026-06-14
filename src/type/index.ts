@@ -1,10 +1,18 @@
-import { BasesEntry, BasesViewConfig, Value, moment } from 'obsidian';
+import {
+	App,
+	BasesEntry,
+	BasesViewConfig,
+	Value,
+	getAllTags,
+	moment,
+} from 'obsidian';
 import { logger } from '../helper/logger';
 
 /**
  * Minimal properties for the timeline view in obsidian file
  */
 export class TimelineProperties {
+	private app: App;
 	/**
 	 * the start key of file properties, if start is not set, it means the instance is not valid
 	 * @example start: '2025-01-01'
@@ -24,9 +32,10 @@ export class TimelineProperties {
 
 	private config: BasesViewConfig;
 	private entry: BasesEntry;
-	constructor(entry: BasesEntry, config: BasesViewConfig) {
+	constructor(entry: BasesEntry, config: BasesViewConfig, app: App) {
 		this.entry = entry;
 		this.config = config;
+		this.app = app;
 	}
 
 	isValid(): boolean {
@@ -39,7 +48,12 @@ export class TimelineProperties {
 		// This ensures paths with spaces and special characters are handled correctly
 		const escapedPath = escapeHtml(path);
 
-		return `${this.getDateDescription() || ''}<br><a href="${escapedPath}" class="internal-link" data-href="${escapedPath}">${this.content || ''}</a>`;
+		const cache = this.app.metadataCache.getFileCache(this.entry.file);
+		const frontmatter = cache?.frontmatter ?? {};
+		const tags = cache ? (getAllTags(cache) ?? []) : [];
+		const dataAttrs = buildItemDataAttributes(frontmatter, tags);
+
+		return `<div ${dataAttrs}>${this.getDateDescription() || ''}<br><a href="${escapedPath}" class="internal-link" data-href="${escapedPath}">${escapeHtml(this.content || '')}</a></div>`;
 	}
 
 	private getDateDescription() {
@@ -80,8 +94,9 @@ export class TimelineProperties {
 	static fromEntry(
 		entry: BasesEntry,
 		config: BasesViewConfig,
+		app: App,
 	): TimelineProperties {
-		const properties = new TimelineProperties(entry, config);
+		const properties = new TimelineProperties(entry, config, app);
 
 		const { start, end } = getValidDate(
 			getStartDate(entry, config),
@@ -217,4 +232,58 @@ function escapeHtml(text: string): string {
 		.replace(/</g, '&lt;')
 		.replace(/>/g, '&gt;')
 		.replace(/"/g, '&quot;');
+}
+
+/**
+ * Build data attributes for timeline item DOM (tags + frontmatter).
+ * - data-tags: space-separated tag list, CSS e.g. [data-tags~="foo"]
+ * - data-{key}: each frontmatter field, e.g. data-status="done", data-a="1"
+ */
+function buildItemDataAttributes(
+	frontmatter: Record<string, unknown>,
+	tags: string[],
+): string {
+	const attrs = ['class="timeline-item"'];
+
+	if (tags.length > 0) {
+		attrs.push(`data-tags="${escapeHtml(tags.join(' '))}"`);
+	}
+
+	for (const [key, value] of Object.entries(frontmatter)) {
+		if (value == null) {
+			continue;
+		}
+		const attrKey = sanitizeDataAttributeKey(key);
+		if (!attrKey) {
+			continue;
+		}
+		const attrValue = serializeFrontmatterValue(value);
+		if (attrValue === undefined) {
+			continue;
+		}
+		attrs.push(`data-${attrKey}="${escapeHtml(attrValue)}"`);
+	}
+
+	return attrs.join(' ');
+}
+
+function serializeFrontmatterValue(value: unknown): string | undefined {
+	if (value == null) {
+		return undefined;
+	}
+	if (Array.isArray(value)) {
+		return value.map(String).join(' ');
+	}
+	if (typeof value === 'object') {
+		return JSON.stringify(value);
+	}
+	return String(value);
+}
+
+function sanitizeDataAttributeKey(key: string): string {
+	return key
+		.toLowerCase()
+		.replace(/[^a-z0-9_-]/g, '-')
+		.replace(/-+/g, '-')
+		.replace(/^-|-$/g, '');
 }
