@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.4.0](https://github.com/xjiaxiang/obsidian-bases-timeline-view/compare/1.3.0...1.4.0) (2026-06-14)
+
+
+### Features
+
+* enhance timeline properties with app context and data attributes ([7723d3c](https://github.com/xjiaxiang/obsidian-bases-timeline-view/commit/7723d3c8dc4cfa56adc94b32aaed4c661b11d98f))
+
 ## [1.3.0](https://github.com/xjiaxiang/obsidian-bases-timeline-view/compare/1.2.0...1.3.0) (2026-06-12)
 
 

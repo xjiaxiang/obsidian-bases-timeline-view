@@ -1,6 +1,6 @@
 {
 	"name": "obsidian-bases-timeline-view",
-	"version": "1.3.0",
+	"version": "1.4.0",
 	"description": "timeline view for bases.",
 	"main": "main.js",
 	"scripts": {
