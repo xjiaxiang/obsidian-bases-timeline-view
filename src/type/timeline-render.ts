@@ -1,4 +1,4 @@
-/** Date accepted by the timeline render API */
+/** Date accepted by the timeline render API (normalized to string before draw when via Bases / api.dv). */
 export type TimelineDate = string | number | Date;
 
 export type TimelineItemInput = {

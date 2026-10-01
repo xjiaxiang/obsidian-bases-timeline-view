@@ -1,6 +1,11 @@
 import { Plugin, QueryController } from 'obsidian';
 import type { TimelineOptions } from 'vis-timeline/esnext';
+import {
+	renderFromDataview,
+	type DataviewRenderSources,
+} from './api/dataview';
 import { drawVisTimeline } from './helper/draw-vis-timeline';
+import { reattachTimelineLinkHandlers } from './helper/timeline-link-handlers';
 import type { TimelineRenderInput } from './type/timeline-render';
 import { TimelineView } from './ui/timeline-view';
 
@@ -56,6 +61,22 @@ export default class BasesTimelineViewPlugin extends Plugin {
 					displayName: 'end label field',
 					default: 'note.endLabel',
 				},
+				{
+					key: 'classNameField',
+					type: 'property',
+					displayName: 'class name field',
+					default: 'note.cssclasses',
+				},
+				{
+					key: 'backgroundWhen',
+					type: 'property',
+					displayName: 'background when',
+				},
+				{
+					key: 'markerWhen',
+					type: 'property',
+					displayName: 'marker when',
+				},
 			],
 		});
 	}
@@ -65,6 +86,17 @@ export default class BasesTimelineViewPlugin extends Plugin {
 			containerEl: HTMLElement,
 			input: TimelineRenderInput,
 			options?: TimelineOptions,
-		) => drawVisTimeline(containerEl, input, options),
+		) => {
+			reattachTimelineLinkHandlers(containerEl, this.app, this);
+			return drawVisTimeline(containerEl, input, options);
+		},
+		/** DataviewJS helpers: pass page lists instead of mapping by hand */
+		dv: {
+			render: (containerEl: HTMLElement, sources: DataviewRenderSources) =>
+				renderFromDataview(containerEl, sources, {
+					app: this.app,
+					hoverParent: this,
+				}),
+		},
 	};
 }

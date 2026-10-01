@@ -44,7 +44,8 @@ export function drawVisTimeline(
 		});
 	}
 
-	const timeline = new Timeline(containerEl, items, groups, {
+
+	const timelineOptions: TimelineOptions = {
 		showCurrentTime: false,
 		showTooltips: false,
 		selectable: false,
@@ -63,14 +64,21 @@ export function drawVisTimeline(
 				);
 				eventContainer.append(...Array.from(parsed.body.childNodes));
 
-				eventContainer.querySelectorAll('a.internal-link').forEach((link) => {
-					link.addEventListener('mousedown', (e) => e.stopPropagation());
-				});
+				// eventContainer.querySelectorAll('a.internal-link').forEach((link) => {
+				// 	link.addEventListener('mousedown', (e) => e.stopPropagation());
+				// });
 			}
 
 			return eventContainer;
 		},
-	});
+	};
+
+	// Empty groups DataSet still enables group mode and can cause
+	// "WARNING: infinite loop in redraw?" / missing items — omit it.
+	const timeline =
+		groups != null
+			? new Timeline(containerEl, items, groups, timelineOptions)
+			: new Timeline(containerEl, items, timelineOptions);
 
 	for (const marker of input.markers ?? []) {
 		const id = timeline.addCustomTime(marker.time, marker.id);
@@ -101,7 +109,7 @@ function buildGroups(input: TimelineRenderInput) {
 		}
 	}
 
-	// if no groups are provided, we need to create them from the items and backgrounds
+	// if no groups are provided, collect from items / backgrounds that set group
 	if (provided.length === 0) {
 		for (const item of input.items ?? []) {
 			if (item.group == null || item.group === '') {
@@ -121,6 +129,10 @@ function buildGroups(input: TimelineRenderInput) {
 				byId.set(id, { id, content: id });
 			}
 		}
+	}
+
+	if (byId.size === 0) {
+		return null;
 	}
 
 	return new DataSet(
