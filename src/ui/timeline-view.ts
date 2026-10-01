@@ -1,4 +1,5 @@
 import { BasesView, QueryController } from 'obsidian';
+import { convertToVisData } from '../helper/convert-to-vis-data';
 import { drawVisTimeline } from '../helper/draw-vis-timeline';
 import { logger } from '../helper/logger';
 
@@ -56,12 +57,11 @@ export class TimelineView extends BasesView {
 	public onDataUpdated(): void {
 		this.containerEl.empty();
 
-		// render
-		drawVisTimeline(
-			this.containerEl,
+		const input = convertToVisData(
 			this.data.groupedData,
 			this.config,
 			this.app,
 		);
+		drawVisTimeline(this.containerEl, input);
 	}
 }

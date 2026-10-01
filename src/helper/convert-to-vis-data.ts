@@ -1,32 +1,29 @@
 import { App, BasesEntryGroup, BasesViewConfig } from 'obsidian';
-import { DataSet } from 'vis-data';
-import { DataGroup, DataItem } from 'vis-timeline';
 import { logger } from './logger';
 import { TimelineProperties } from '../type';
-
-export type ConvertToVisDataResult = {
-	/** item info */
-	items: DataSet<DataItem>;
-	/** group info */
-	groups: DataSet<DataGroup>;
-};
+import type {
+	TimelineGroupInput,
+	TimelineItemInput,
+	TimelineRenderInput,
+} from '../type/timeline-render';
 
 /**
- * convert the grouped data to the vis data
+ * Convert Bases grouped entries to generic timeline render input.
  */
 export function convertToVisData(
 	groupedData: BasesEntryGroup[],
 	config: BasesViewConfig,
 	app: App,
-): ConvertToVisDataResult {
-	const items = new DataSet<DataItem>();
-	const groups = new DataSet<DataGroup>();
+): TimelineRenderInput {
+	const items: TimelineItemInput[] = [];
+	const groups: TimelineGroupInput[] = [];
 
 	for (const gd of groupedData) {
 		const groupName = gd.key?.toString() || '';
+		const groupId = getGroupName(groupName);
 
-		groups.add({
-			id: getGroupName(groupName),
+		groups.push({
+			id: groupId,
 			content: groupName,
 		});
 
@@ -38,14 +35,13 @@ export function convertToVisData(
 				return;
 			}
 
-			const item: DataItem = {
+			items.push({
+				id: entry.file.path,
 				start: properties.start!,
 				end: properties.end,
 				content: properties.getContentForDraw(),
-				group: getGroupName(groupName),
-			};
-
-			items.add(item);
+				group: groupId,
+			});
 		});
 	}
 

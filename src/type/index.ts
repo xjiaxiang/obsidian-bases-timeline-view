@@ -8,6 +8,15 @@ import {
 } from 'obsidian';
 import { logger } from '../helper/logger';
 
+export type {
+	TimelineBackgroundInput,
+	TimelineDate,
+	TimelineGroupInput,
+	TimelineItemInput,
+	TimelineMarkerInput,
+	TimelineRenderInput,
+} from './timeline-render';
+
 /**
  * Minimal properties for the timeline view in obsidian file
  */
@@ -207,7 +216,7 @@ function getValidDate(start: Value | null, end?: Value | null) {
 }
 
 function normalizeDate(date: string): string | undefined {
-	const normalized = moment(date);
+	const normalized = (moment as any)(date);
 	if (normalized.isValid()) {
 		return normalized.format('YYYY-MM-DD');
 	}

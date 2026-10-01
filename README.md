@@ -8,6 +8,8 @@ timeline view for obsidian bases.
 
 - **Group Support**: Organize timeline items into groups using Bases' `group-by` functionality (requires Obsidian 1.10 or later). This allows you to categorize and visually separate timeline items based on any field in your notes, making it easier to view related events together.
 
+- **Render API**: Call `plugin.api.render(...)` from DataviewJS or other scripts to draw a timeline with separate `items`, `backgrounds`, and `markers` (no Bases query required).
+
 ## Example
 
 ### Basic Usage
@@ -96,6 +98,143 @@ we added tags and frontmatter to the timeline item's `data-` attributes, you can
 
 - `#projects` is a tag, you can use any tag you want
 - `data-status="not started"` is a frontmatter(status), you can use any frontmatter you want
+
+## API
+
+Use the plugin API when you want to query data yourself (for example with DataviewJS) and pass `items`, `backgrounds`, and `markers` separately. This avoids the single-query limit of a Bases view.
+
+### Access
+
+Plugin id: `bases-timeline-view`
+
+```js
+const api = app.plugins.plugins['bases-timeline-view']?.api;
+if (!api) {
+	// plugin not enabled
+}
+```
+
+### `api.render(containerEl, input, options?)`
+
+| Argument      | Type                         | Description                                                         |
+| ------------- | ---------------------------- | ------------------------------------------------------------------- |
+| `containerEl` | `HTMLElement`                | Container to mount the timeline into                                |
+| `input`       | `TimelineRenderInput`        | Timeline data (see below)                                           |
+| `options`     | `TimelineOptions` (optional) | Extra [vis-timeline](https://github.com/visjs/vis-timeline) options |
+
+Returns a vis-timeline `Timeline` instance.
+
+Clear the container before re-rendering (DataviewJS re-runs often):
+
+```js
+this.container.empty();
+api.render(this.container, input);
+```
+
+### Input shape
+
+```ts
+type TimelineRenderInput = {
+	items?: TimelineItemInput[];
+	backgrounds?: TimelineBackgroundInput[];
+	markers?: TimelineMarkerInput[];
+	groups?: TimelineGroupInput[];
+};
+```
+
+| Field         | Role                                                                                   |
+| ------------- | -------------------------------------------------------------------------------------- |
+| `items`       | Normal events (point / range)                                                          |
+| `backgrounds` | Shaded ranges (`type: 'background'`). Omit `group` for a full-width band               |
+| `markers`     | Vertical custom-time bars (`addCustomTime`)                                            |
+| `groups`      | Swimlanes. If omitted, group ids used on items/backgrounds are collected automatically |
+
+**Item**
+
+| Field                 | Required | Description                                      |
+| --------------------- | -------- | ------------------------------------------------ |
+| `start`               | yes      | `string \| number \| Date`                       |
+| `content`             | yes      | Plain text or HTML (e.g. with `a.internal-link`) |
+| `end`                 | no       | If set, drawn as a range                         |
+| `id`                  | no       | Stable id (recommended: note path)               |
+| `group`               | no       | Group id                                         |
+| `className` / `title` | no       | CSS class / hover title                          |
+
+**Background**
+
+| Field                                  | Required | Description                                                    |
+| -------------------------------------- | -------- | -------------------------------------------------------------- |
+| `start` / `end`                        | yes      | Range                                                          |
+| `content`                              | no       | Label / identifier                                             |
+| `id` / `group` / `className` / `style` | no       | Same idea as items; `style` e.g. `background-color: rgba(...)` |
+
+**Marker**
+
+| Field   | Required | Description         |
+| ------- | -------- | ------------------- |
+| `time`  | yes      | Marker time         |
+| `id`    | no       | Custom time id      |
+| `title` | no       | Label on the marker |
+
+**Group**
+
+| Field                 | Required | Description |
+| --------------------- | -------- | ----------- |
+| `id`                  | yes      | Group id    |
+| `content`             | yes      | Group label |
+| `className` / `order` | no       |             |
+
+### DataviewJS example
+
+Requires [Dataview](https://github.com/blacksmithgu/obsidian-dataview) and this plugin enabled.
+
+````markdown
+```dataviewjs
+const api = app.plugins.plugins['bases-timeline-view']?.api;
+if (!api) {
+  dv.paragraph('Enable the Bases Timeline View plugin first.');
+  return;
+}
+
+const items = dv.pages('#event')
+  .where(p => p.start)
+  .map(p => ({
+    id: p.file.path,
+    start: p.start,
+    end: p.end,
+    content: p.content ?? p.file.name,
+    group: p.area,
+  }));
+
+const backgrounds = dv.pages('#phase')
+  .where(p => p.start && p.end)
+  .map(p => ({
+    id: p.file.path,
+    start: p.start,
+    end: p.end,
+    content: p.file.name,
+    className: 'phase-bg',
+  }));
+
+const markers = [
+  { id: 'launch', time: '2025-03-01', title: 'Launch' },
+];
+
+const groups = [...new Set(items.map(i => i.group).filter(Boolean))]
+  .map(id => ({ id, content: String(id) }));
+
+this.container.empty();
+api.render(this.container, { items, backgrounds, markers, groups });
+```
+````
+
+The same note can be an `item` in one query and a `background` in another — the API does not read a fixed role from frontmatter.
+
+### Notes
+
+- The API does **not** wire Obsidian link click / hover preview for you. If `content` contains `a.internal-link`, handle open/hover on your container (the Bases timeline view does this internally).
+- Prefer stable `id` values when you re-render.
+- `options` is passed through to vis-timeline; keep overrides minimal unless you need them.
 
 ## Tips
 

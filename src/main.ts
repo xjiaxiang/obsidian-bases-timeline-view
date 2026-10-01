@@ -1,4 +1,7 @@
 import { Plugin, QueryController } from 'obsidian';
+import type { TimelineOptions } from 'vis-timeline/esnext';
+import { drawVisTimeline } from './helper/draw-vis-timeline';
+import type { TimelineRenderInput } from './type/timeline-render';
 import { TimelineView } from './ui/timeline-view';
 
 import './timeline.css';
@@ -58,6 +61,10 @@ export default class BasesTimelineViewPlugin extends Plugin {
 	}
 
 	api = {
-		// define your API methods here
+		render: (
+			containerEl: HTMLElement,
+			input: TimelineRenderInput,
+			options?: TimelineOptions,
+		) => drawVisTimeline(containerEl, input, options),
 	};
 }
