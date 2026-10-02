@@ -250,7 +250,7 @@ if (!api?.dv) {
 
 三种方式：
 
-- 从 Obsidian 社区插件安装（尚未上架）
+- 从 Obsidian 社区插件安装，搜索 `bases timeline view` 安装
 - 手动安装
   - 从 [GitHub Releases](https://github.com/xjiaxiang/obsidian-bases-timeline-view/releases) 下载最新版本
   - 在插件目录（`.obsidian/plugins/`）下新建文件夹 `bases-timeline-view`

@@ -248,7 +248,7 @@ if (!api?.dv) {
 
 Three ways:
 
-- Install from Obsidian Community Plugins (not listed yet)
+- Install from Obsidian Community Plugins, search `bases timeline view` to install
 - Manual install
   - Download the latest release from [GitHub Releases](https://github.com/xjiaxiang/obsidian-bases-timeline-view/releases)
   - Create a folder `bases-timeline-view` under `.obsidian/plugins/`
