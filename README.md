@@ -2,9 +2,7 @@
 
 Timeline view for Obsidian Bases.
 
-Chinese documentation: [docs/README.zh-CN.md](./docs/README.zh-CN.md).
-
-For API parameters, see [API reference](./docs/api.md).
+Chinese documentation: [中文版.md](./docs/README.zh-CN.md).
 
 ## Features
 
