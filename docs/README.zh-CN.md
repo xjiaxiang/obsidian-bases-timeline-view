@@ -252,7 +252,7 @@ if (!api?.dv) {
 
 - 从 Obsidian 社区插件安装（尚未上架）
 - 手动安装
-  - 从 [GitHub Releases](https://github.com/xiang2x/obsidian-bases-timeline-view/releases) 下载最新版本
+  - 从 [GitHub Releases](https://github.com/xjiaxiang/obsidian-bases-timeline-view/releases) 下载最新版本
   - 在插件目录（`.obsidian/plugins/`）下新建文件夹 `bases-timeline-view`
   - 将下载的文件放入该文件夹
   - 重新加载 Obsidian
@@ -261,7 +261,7 @@ if (!api?.dv) {
   - 若尚未安装，先安装 [BRAT](https://github.com/TfTHacker/obsidian42-brat)
   - 在 **设置 → 社区插件** 中启用 BRAT
   - 打开命令面板（Ctrl+P），输入 `BRAT: Plugins: Add a beta plugin for test`
-  - 填写仓库地址：[https://github.com/xiang2x/obsidian-bases-timeline-view](https://github.com/xiang2x/obsidian-bases-timeline-view)
+  - 填写仓库地址：[https://github.com/xjiaxiang/obsidian-bases-timeline-view](https://github.com/xjiaxiang/obsidian-bases-timeline-view)
   - 选择最新版本
   - 点击 `Add plugin` 安装
   - 若未自动启用，在 **设置 → 社区插件** 中启用 `bases-timeline-view`

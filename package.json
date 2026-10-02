@@ -18,7 +18,7 @@
 		"timeline",
 		"view"
 	],
-	"author": "hey@xiang2x.com",
+	"author": "hey@xjiaxiang.com",
 	"license": "MIT",
 	"devDependencies": {
 		"@commitlint/cli": "20.1.0",
