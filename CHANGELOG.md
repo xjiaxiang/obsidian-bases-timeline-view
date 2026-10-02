@@ -1,5 +1,14 @@
 # Changelog
 
+## [1.5.0](https://github.com/xjiaxiang/obsidian-bases-timeline-view/compare/1.4.0...1.5.0) (2026-10-02)
+
+
+### Features
+
+* add render API for custom timeline rendering ([b0c09f9](https://github.com/xjiaxiang/obsidian-bases-timeline-view/commit/b0c09f9429f7bebab5e6709b64f1587cfaf972fb))
+* enhance grouping functionality in timeline rendering ([443ce17](https://github.com/xjiaxiang/obsidian-bases-timeline-view/commit/443ce17934d2c8ce3861d7c5912ae30940e055b9))
+* support background and marker for base view ([881ec4c](https://github.com/xjiaxiang/obsidian-bases-timeline-view/commit/881ec4cb95bb084ab9610274b7b4109b8c7d88b1))
+
 ## [1.4.0](https://github.com/xiang2x/obsidian-bases-timeline-view/compare/1.3.0...1.4.0) (2026-06-14)
 
 
