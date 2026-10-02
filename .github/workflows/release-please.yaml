@@ -18,33 +18,67 @@ jobs:
       - uses: googleapis/release-please-action@v4
         id: release
         with:
-          token: ${{ secrets.RELEASE_PLEASE_TOKEN }}
           config-file: release-please-config.json
           manifest-file: .release-please-manifest.json
 
-      - name: Checkout code
-        if: ${{ steps.release.outputs.release_created}}
-        uses: actions/checkout@v6
+      - name: Resolve release PR branch
+        id: release-pr
+        if: ${{ steps.release.outputs.prs_created == 'true' && steps.release.outputs.pr != '' }}
+        env:
+          RELEASE_PR: ${{ steps.release.outputs.pr }}
+        run: |
+          BRANCH=$(printf '%s' "$RELEASE_PR" | jq -r '.headBranchName // empty')
+          if [ -z "$BRANCH" ]; then
+            echo "release-please pr output missing headBranchName" >&2
+            exit 1
+          fi
+          echo "head_ref=$BRANCH" >> "$GITHUB_OUTPUT"
 
       - name: Set up Node.js
-        if: ${{ steps.release.outputs.release_created }}
+        if: ${{ steps.release-pr.outputs.head_ref != '' || steps.release.outputs.release_created == 'true' }}
         uses: actions/setup-node@v6
         with:
-          node-version: 22
+          node-version: 24
 
       - name: Install pnpm
-        if: ${{ steps.release.outputs.release_created }}
+        if: ${{ steps.release-pr.outputs.head_ref != '' || steps.release.outputs.release_created == 'true' }}
         run: npm install -g pnpm
 
+      # Sync Obsidian version files onto the open release PR
+      - name: Checkout release PR branch
+        if: ${{ steps.release-pr.outputs.head_ref != '' }}
+        uses: actions/checkout@v6
+        with:
+          ref: ${{ steps.release-pr.outputs.head_ref }}
+
+      - name: Update version files
+        if: ${{ steps.release-pr.outputs.head_ref != '' }}
+        run: |
+          pnpm install --frozen-lockfile
+          pnpm run version
+
+      - name: Commit and push version files
+        if: ${{ steps.release-pr.outputs.head_ref != '' }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add .
+          git diff --staged --quiet || (git commit -m "chore: update version files" && git push)
+
+      # Build and upload artifacts when a release is created
+      - name: Checkout code
+        if: ${{ steps.release.outputs.release_created == 'true' }}
+        uses: actions/checkout@v6
+
       - name: Install dependencies and build
-        if: ${{ steps.release.outputs.release_created }}
+        if: ${{ steps.release.outputs.release_created == 'true' }}
         run: |
           pnpm install --frozen-lockfile
           pnpm run build
           echo "${{ steps.release.outputs.tag_name }}"
 
       - name: Upload Release Artifact
-        if: ${{ steps.release.outputs.release_created }}
+        if: ${{ steps.release.outputs.release_created == 'true' }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: gh release upload ${{ steps.release.outputs.tag_name }} ./dist/main.js ./dist/manifest.json ./dist/styles.css

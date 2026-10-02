@@ -60,13 +60,10 @@
 	border: none;
 	border-radius: 7px;
 	height: auto;
-	width: max-content;
 	text-rendering: auto;
-	color: -internal-light-dark(black, white);
 	letter-spacing: normal;
 	word-spacing: normal;
 	text-transform: none;
-	text-indent: 0px;
 	text-shadow: none;
 	overflow-wrap: break-word;
 	color: var(--text-normal);

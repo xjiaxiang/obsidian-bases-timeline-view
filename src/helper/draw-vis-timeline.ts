@@ -1,27 +1,60 @@
 import type { DataItem, TimelineOptions } from 'vis-timeline/esnext';
 import { Timeline } from 'vis-timeline/esnext';
-import { App, BasesEntryGroup, BasesViewConfig } from 'obsidian';
-import { convertToVisData } from './convert-to-vis-data';
+import { DataSet } from 'vis-data';
+import type {
+	TimelineGroupInput,
+	TimelineRenderInput,
+} from '../type/timeline-render';
 
 import 'vis-timeline/styles/vis-timeline-graph2d.css';
+
 /**
- * draw the vis timeline
+ * Draw a vis timeline from generic render input (Bases / DataviewJS / API).
  */
 export function drawVisTimeline(
 	containerEl: HTMLElement,
-	data: BasesEntryGroup[],
-	config: BasesViewConfig,
-	app: App,
+	input: TimelineRenderInput,
 	options: TimelineOptions = {},
-) {
-	const { items, groups } = convertToVisData(data, config, app);
+): Timeline {
+	const items = new DataSet<DataItem>();
+	const groups = buildGroups(input);
 
-	const timeline = new Timeline(containerEl, items, groups, {
+	for (const item of input.items ?? []) {
+		items.add({
+			id: item.id,
+			start: item.start,
+			end: item.end,
+			content: item.content,
+			group: item.group,
+			className: item.className,
+			title: item.title,
+		});
+	}
+
+	for (const bg of input.backgrounds ?? []) {
+		items.add({
+			id: bg.id,
+			start: bg.start,
+			end: bg.end,
+			content: bg.content ?? '',
+			group: bg.group,
+			className: bg.className,
+			style: bg.style,
+			type: 'background',
+		});
+	}
+
+
+	const timelineOptions: TimelineOptions = {
 		showCurrentTime: false,
 		showTooltips: false,
 		selectable: false,
 		...options,
 		template: function (item: DataItem, _element: HTMLElement) {
+			if (item.type === 'background') {
+				return item.content || '';
+			}
+
 			const eventContainer = document.createElement('div');
 
 			if (item.content) {
@@ -31,15 +64,83 @@ export function drawVisTimeline(
 				);
 				eventContainer.append(...Array.from(parsed.body.childNodes));
 
-				// 给本 item 里的每个链接挂事件
-				eventContainer.querySelectorAll('a.internal-link').forEach((link) => {
-					link.addEventListener('mousedown', (e) => e.stopPropagation());
-				});
+				// eventContainer.querySelectorAll('a.internal-link').forEach((link) => {
+				// 	link.addEventListener('mousedown', (e) => e.stopPropagation());
+				// });
 			}
 
 			return eventContainer;
 		},
-	});
+	};
+
+	// Empty groups DataSet still enables group mode and can cause
+	// "WARNING: infinite loop in redraw?" / missing items — omit it.
+	const timeline =
+		groups != null
+			? new Timeline(containerEl, items, groups, timelineOptions)
+			: new Timeline(containerEl, items, timelineOptions);
+
+	for (const marker of input.markers ?? []) {
+		const id = timeline.addCustomTime(marker.time, marker.id);
+		if (marker.title) {
+			// Timeline typings omit setCustomTimeMarker; runtime supports it.
+			(
+				timeline as Timeline & {
+					setCustomTimeMarker: (
+						title: string,
+						id?: string | number,
+						editable?: boolean,
+					) => void;
+				}
+			).setCustomTimeMarker(marker.title, id);
+		}
+	}
 
 	return timeline;
+}
+
+function buildGroups(input: TimelineRenderInput) {
+	const provided = input.groups ?? [];
+	const byId = new Map<string, TimelineGroupInput>();
+
+	for (const group of provided) {
+		if (group.id) {
+			byId.set(String(group.id), group);
+		}
+	}
+
+	// if no groups are provided, collect from items / backgrounds that set group
+	if (provided.length === 0) {
+		for (const item of input.items ?? []) {
+			if (item.group == null || item.group === '') {
+				continue;
+			}
+			const id = String(item.group);
+			if (!byId.has(id)) {
+				byId.set(id, { id, content: id });
+			}
+		}
+		for (const bg of input.backgrounds ?? []) {
+			if (bg.group == null || bg.group === '') {
+				continue;
+			}
+			const id = String(bg.group);
+			if (!byId.has(id)) {
+				byId.set(id, { id, content: id });
+			}
+		}
+	}
+
+	if (byId.size === 0) {
+		return null;
+	}
+
+	return new DataSet(
+		[...byId.values()].map((g) => ({
+			id: g.id,
+			content: g.content,
+			className: g.className,
+			order: g.order,
+		})),
+	);
 }
