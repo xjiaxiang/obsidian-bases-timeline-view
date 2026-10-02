@@ -4,6 +4,7 @@ import type { TimelineOptions } from 'vis-timeline/esnext';
 import { drawVisTimeline } from '../helper/draw-vis-timeline';
 import { logger } from '../helper/logger';
 import { normalizeVisDate } from '../helper/normalize-vis-date';
+import { resolveTimelineGroupId, normalizeGroupKey } from '../helper/timeline-group';
 import { reattachTimelineLinkHandlers } from '../helper/timeline-link-handlers';
 import { buildItemContentHtml } from '../helper/timeline-item-content';
 import type {
@@ -20,6 +21,11 @@ export type DataviewPageLike = Record<string, unknown> & {
 		path?: string;
 		name?: string;
 	};
+	/**
+	 * Manual swimlane id. When present on the object (own property),
+	 * overrides {@link DataviewFieldMap.group}.
+	 */
+	group?: unknown;
 };
 
 export type DataviewMarkerLiteral = {
@@ -37,7 +43,10 @@ export type DataviewFieldMap = {
 	content?: string;
 	/** default: cssclasses */
 	className?: string;
-	/** optional group property on the page */
+	/**
+	 * Page property used as swimlane id when the element does not set `group`.
+	 * Element-level `group` always wins.
+	 */
 	group?: string;
 	/** optional display label for start (falls back to normalized start) */
 	startLabel?: string;
@@ -59,6 +68,17 @@ export type DataviewRenderSources = {
 export type DataviewRenderContext = {
 	app: App;
 	hoverParent: unknown;
+};
+
+type MappedPageFields = {
+	id?: string;
+	start?: string;
+	end?: string;
+	content: string;
+	className?: string;
+	group?: string;
+	startLabel?: string;
+	endLabel?: string;
 };
 
 /**
@@ -86,20 +106,44 @@ export function pagesToRenderInput(
 	const markers: TimelineMarkerInput[] = [];
 	const groupIds = new Set<string>();
 
+	const mappedItems: MappedPageFields[] = [];
 	for (const page of toArray(sources.items)) {
 		const mapped = mapPageFields(page, fields);
 		if (mapped.start == null) {
 			logger.warn(`dv: skip item without start: ${mapped.id ?? '?'}`);
 			continue;
 		}
-		if (mapped.group) {
-			groupIds.add(mapped.group);
+		mappedItems.push(mapped);
+	}
+
+	const mappedBackgrounds: MappedPageFields[] = [];
+	for (const page of toArray(sources.backgrounds)) {
+		const mapped = mapPageFields(page, fields);
+		if (mapped.start == null || mapped.end == null) {
+			logger.warn(
+				`dv: skip background without start/end: ${mapped.id ?? '?'}`,
+			);
+			continue;
+		}
+		mappedBackgrounds.push(mapped);
+	}
+
+	// Grouping is active when any item/background already resolved a group
+	// (manual override or fields.group). Missing values then fall into `Other`.
+	const hasGrouping = [...mappedItems, ...mappedBackgrounds].some(
+		(mapped) => !!normalizeGroupKey(mapped.group),
+	);
+
+	for (const mapped of mappedItems) {
+		const group = resolveTimelineGroupId(mapped.group, hasGrouping);
+		if (group) {
+			groupIds.add(group);
 		}
 
 		const { frontmatter, tags } = readMetaFromApp(app, mapped.id);
 		items.push({
 			id: mapped.id,
-			start: mapped.start,
+			start: mapped.start!,
 			end: mapped.end,
 			content: buildItemContentHtml({
 				path: mapped.id || mapped.content,
@@ -111,28 +155,22 @@ export function pagesToRenderInput(
 				frontmatter,
 				tags,
 			}),
-			group: mapped.group,
+			group,
 			className: mapped.className,
 		});
 	}
 
-	for (const page of toArray(sources.backgrounds)) {
-		const mapped = mapPageFields(page, fields);
-		if (mapped.start == null || mapped.end == null) {
-			logger.warn(
-				`dv: skip background without start/end: ${mapped.id ?? '?'}`,
-			);
-			continue;
-		}
-		if (mapped.group) {
-			groupIds.add(mapped.group);
+	for (const mapped of mappedBackgrounds) {
+		const group = resolveTimelineGroupId(mapped.group, hasGrouping);
+		if (group) {
+			groupIds.add(group);
 		}
 		backgrounds.push({
 			id: mapped.id,
-			start: mapped.start,
-			end: mapped.end,
+			start: mapped.start!,
+			end: mapped.end!,
 			content: mapped.content,
-			group: mapped.group,
+			group,
 			className: mapped.className,
 		});
 	}
@@ -195,7 +233,7 @@ function mapPageFields(page: DataviewPageLike, fields: DataviewFieldMap) {
 		id ||
 		'';
 	const className = readClassName(page, fields.className ?? 'cssclasses');
-	const group = fields.group ? readString(page, fields.group) : undefined;
+	const group = resolvePageGroup(page, fields);
 	const startLabel = fields.startLabel
 		? readString(page, fields.startLabel)
 		: undefined;
@@ -213,6 +251,34 @@ function mapPageFields(page: DataviewPageLike, fields: DataviewFieldMap) {
 		startLabel: startLabel || start,
 		endLabel: endLabel || end,
 	};
+}
+
+/**
+ * Prefer element-level `group` (manual override) over `fields.group` property lookup.
+ */
+function resolvePageGroup(
+	page: DataviewPageLike,
+	fields: DataviewFieldMap,
+): string | undefined {
+	if (Object.prototype.hasOwnProperty.call(page, 'group')) {
+		return normalizeGroupKey(stringifyGroupValue(page.group));
+	}
+	if (fields.group) {
+		return normalizeGroupKey(readString(page, fields.group));
+	}
+	return undefined;
+}
+
+function stringifyGroupValue(raw: unknown): string | undefined {
+	if (raw == null || raw === '') {
+		return undefined;
+	}
+	if (Array.isArray(raw)) {
+		const text = raw.map(String).join(' ').trim();
+		return text || undefined;
+	}
+	const text = String(raw).trim();
+	return text || undefined;
 }
 
 function readMetaFromApp(

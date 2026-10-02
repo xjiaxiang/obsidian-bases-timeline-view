@@ -250,7 +250,7 @@ api.dv.render(containerEl, {
     end?: string,         // 默认：end
     content?: string,     // 默认：content，再试 file.name
     className?: string,   // 默认：cssclasses
-    group?: string,       // 可选
+    group?: string,       // 可选页面属性；可被元素上的 group 覆盖
     startLabel?: string,  // 可选，开始日期展示文案
     endLabel?: string,    // 可选，结束日期展示文案
   },
@@ -268,8 +268,20 @@ api.dv.render(containerEl, {
 | `cssclasses`（列表空格拼接）          | `className`                       |
 | `file.path`                           | `id` + 链接目标                   |
 | 可选 `fields.startLabel` / `endLabel` | 日期行展示文案                    |
+| 可选 `fields.group`                   | 从该页面属性读泳道 id             |
+| 元素自身的 `group`                    | 覆盖该条的 `fields.group`         |
 
-`api.dv.render` 生成与 Bases 视图同款的 item HTML（日期行、`a.internal-link`、frontmatter/tags 的 `data-*`），并自动接线点击打开与 Page Preview 悬停。
+`api.dv.render` 生成与 Bases 视图同款的 item HTML（日期行、`a.internal-link`、frontmatter/tags 的 `data-*`），并自动接线点击打开与 Page Preview 悬停。分组：元素上的 `group` 优先于 `fields.group`；同批只要有一条有 group，缺的会进 `Other`。
+
+示例 — items / backgrounds 用不同字段分组：
+
+```js
+api.dv.render(this.container, {
+	items: dv.pages('#event').map((p) => ({ ...p, group: p.dynasty })),
+	backgrounds: dv.pages('#phase').map((p) => ({ ...p, group: p.area })),
+	// 每条都手写了 group 时，可不设 fields.group
+});
+```
 
 ````markdown
 ```dataviewjs

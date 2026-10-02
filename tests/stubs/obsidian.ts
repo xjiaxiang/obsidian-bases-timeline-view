@@ -61,3 +61,10 @@ export function moment(input: string) {
 		},
 	};
 }
+
+/** Minimal stubs for modules that import Obsidian types at load time. */
+export class TFile {}
+
+export function getAllTags(): string[] {
+	return [];
+}

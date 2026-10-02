@@ -253,7 +253,7 @@ api.dv.render(containerEl, {
     end?: string,         // default: end
     content?: string,     // default: content, then file.name
     className?: string,   // default: cssclasses
-    group?: string,       // optional
+    group?: string,       // optional page property; overridden by element.group
     startLabel?: string,  // optional display label for start
     endLabel?: string,    // optional display label for end
   },
@@ -271,8 +271,20 @@ Default field mapping:
 | `cssclasses` (list joined)                | `className`                                      |
 | `file.path`                               | `id` + link target                               |
 | optional `fields.startLabel` / `endLabel` | date line labels                                 |
+| optional `fields.group`                   | swimlane id from that page property              |
+| element `group` (own property)            | overrides `fields.group` for that row            |
 
-`api.dv.render` builds the same item HTML as the Bases view (date line, `a.internal-link`, frontmatter/tags `data-*`) and wires click + Page Preview hover.
+`api.dv.render` builds the same item HTML as the Bases view (date line, `a.internal-link`, frontmatter/tags `data-*`) and wires click + Page Preview hover. Grouping: element-level `group` wins over `fields.group`; when any row has a group, rows without one go to `Other`.
+
+Example — different group sources for items vs backgrounds:
+
+```js
+api.dv.render(this.container, {
+	items: dv.pages('#event').map((p) => ({ ...p, group: p.dynasty })),
+	backgrounds: dv.pages('#phase').map((p) => ({ ...p, group: p.area })),
+	// fields.group optional when every row sets group manually
+});
+```
 
 ````markdown
 ```dataviewjs

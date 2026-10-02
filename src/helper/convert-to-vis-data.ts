@@ -1,6 +1,7 @@
 import { App, BasesEntry, BasesEntryGroup, BasesViewConfig } from 'obsidian';
 import { logger } from './logger';
 import { parseBasesEntry } from './parse-bases-entry';
+import { resolveTimelineGroupId, normalizeGroupKey } from './timeline-group';
 import { buildItemContentHtml } from './timeline-item-content';
 import type {
 	TimelineBackgroundInput,
@@ -15,6 +16,8 @@ type TimelineRole = 'item' | 'background' | 'marker';
 /**
  * Convert Bases grouped entries to generic timeline render input.
  * View options `markerWhen` / `backgroundWhen` classify entries (marker > background > item).
+ * Groups are only emitted when Bases actually groupBy'd (non-empty group key).
+ * Entries with an empty group key fall into `Other` when grouping is active.
  */
 export function convertToVisData(
 	groupedData: BasesEntryGroup[],
@@ -25,15 +28,24 @@ export function convertToVisData(
 	const backgrounds: TimelineBackgroundInput[] = [];
 	const markers: TimelineMarkerInput[] = [];
 	const groups: TimelineGroupInput[] = [];
+	const groupIds = new Set<string>();
+
+	const hasGrouping = groupedData.some(
+		(gd) => !!normalizeGroupKey(gd.key?.toString()),
+	);
 
 	for (const gd of groupedData) {
-		const groupName = gd.key?.toString() || '';
-		const groupId = getGroupName(groupName);
-
-		groups.push({
-			id: groupId,
-			content: groupName,
-		});
+		const groupId = resolveTimelineGroupId(
+			gd.key?.toString(),
+			hasGrouping,
+		);
+		if (groupId && !groupIds.has(groupId)) {
+			groupIds.add(groupId);
+			groups.push({
+				id: groupId,
+				content: groupId,
+			});
+		}
 
 		gd.entries.forEach((entry) => {
 			const parsed = parseBasesEntry(entry, config, app);
@@ -99,7 +111,7 @@ export function convertToVisData(
 		items,
 		backgrounds,
 		markers,
-		groups,
+		groups: groups.length > 0 ? groups : undefined,
 	};
 }
 
@@ -118,8 +130,4 @@ function resolveRole(entry: BasesEntry, config: BasesViewConfig): TimelineRole {
 	}
 
 	return 'item';
-}
-
-function getGroupName(groupName?: string) {
-	return groupName || 'default_id';
 }
