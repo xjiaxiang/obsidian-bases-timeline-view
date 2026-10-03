@@ -182,21 +182,21 @@ if (!api) {
 ```dataviewjs
 const api = app.plugins.plugins['bases-timeline-view']?.api;
 if (!api) {
-  dv.paragraph('Please enable the Bases Timeline View plugin first.');
+  dv.paragraph('请先启用 Bases Timeline View 插件。');
 } else {
   const items = [
     {
-      id: 'notes/event-a.md',
+      id: 'notes/事件-甲.md',
       start: '2025-01-01',
       end: '2025-01-03',
-      content: 'Event A',
-      group: 'Engineering',
+      content: '事件甲',
+      group: '工程',
     },
     {
-      id: 'notes/event-b.md',
+      id: 'notes/事件-乙.md',
       start: '2025-02-10',
-      content: 'Event B',
-      group: 'Design',
+      content: '事件乙',
+      group: '设计',
     },
   ];
 
@@ -211,7 +211,7 @@ if (!api) {
   ];
 
   const markers = [
-    { id: 'launch', time: '2025-03-01', title: 'Launch' },
+    { id: 'launch', time: '2025-03-01', title: '发布' },
   ];
 
   api.render(this.container, { items, backgrounds, markers });
@@ -227,7 +227,7 @@ if (!api) {
 ```dataviewjs
 const api = app.plugins.plugins['bases-timeline-view']?.api;
 if (!api?.dv) {
-  dv.paragraph('Please enable the Bases Timeline View plugin first.');
+  dv.paragraph('请先启用 Bases Timeline View 插件。');
 } else {
 	api.dv.render(this.container, {
 		items: dv.pages('#event'),
@@ -238,6 +238,15 @@ if (!api?.dv) {
 
 ```
 ````
+
+### Commands
+
+In a Markdown editor, open the command palette and run:
+
+- **Insert custom render template** — inserts the `api.render` DataviewJS example at the cursor
+- **Insert Dataview render template** — inserts the `api.dv.render` DataviewJS example at the cursor
+
+Previewing these blocks requires the [Dataview](https://github.com/blacksmithgu/obsidian-dataview) plugin.
 
 ## Tips
 

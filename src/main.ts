@@ -4,6 +4,7 @@ import {
 	renderFromDataview,
 	type DataviewRenderSources,
 } from './api/dataview';
+import { registerCommands } from './commands';
 import { drawVisTimeline } from './helper/draw-vis-timeline';
 import { reattachTimelineLinkHandlers } from './helper/timeline-link-handlers';
 import type { TimelineRenderInput } from './type/timeline-render';
@@ -14,6 +15,7 @@ import './timeline.css';
 export default class BasesTimelineViewPlugin extends Plugin {
 	onload() {
 		this.registerView();
+		registerCommands(this);
 
 		this.registerHoverLinkSource('bases-timeline-view', {
 			display: 'Bases Timeline View',

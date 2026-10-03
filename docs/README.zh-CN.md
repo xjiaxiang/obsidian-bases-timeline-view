@@ -241,6 +241,15 @@ if (!api?.dv) {
 ```
 ````
 
+### 命令
+
+在 Markdown 编辑器中打开命令面板，运行：
+
+- **Insert custom render template** — 在光标处插入 `api.render` 的 DataviewJS 示例
+- **Insert Dataview render template** — 在光标处插入 `api.dv.render` 的 DataviewJS 示例
+
+预览这些代码块需要安装 [Dataview](https://github.com/blacksmithgu/obsidian-dataview) 插件。插入内容为英文示例。
+
 ## 提示
 
 - Bases 视图与 `api` / `api.dv.render` 使用同一套日期归一化（字符串、`Date`、数字 → moment → `YYYY-MM-DD`）。
