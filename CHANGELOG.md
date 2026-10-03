@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.6.0](https://github.com/xjiaxiang/obsidian-bases-timeline-view/compare/1.5.0...1.6.0) (2026-10-03)
+
+
+### Features
+
+* add command registration and templates for custom and Dataview render ([2ab488b](https://github.com/xjiaxiang/obsidian-bases-timeline-view/commit/2ab488b335159a995705b36c1f6bf70e0abab580))
+
 ## [1.5.0](https://github.com/xjiaxiang/obsidian-bases-timeline-view/compare/1.4.0...1.5.0) (2026-10-02)
 
 ### Features
