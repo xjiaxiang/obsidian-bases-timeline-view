@@ -25,6 +25,7 @@ export function drawVisTimeline(
 			start: item.start,
 			end: item.end,
 			content: item.content,
+			type: item.type,
 			group: item.group,
 			className: item.className,
 			title: item.title,

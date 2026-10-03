@@ -1,12 +1,16 @@
 /** Date accepted by the timeline render API (normalized to string before draw when via Bases / api.dv). */
 export type TimelineDate = string | number | Date;
 
+export type TimelineItemType = 'box' | 'point' | 'range';
+
 export type TimelineItemInput = {
 	id?: string;
 	start: TimelineDate;
 	end?: TimelineDate;
 	/** Ready-to-insert DOM string (plain text or HTML with internal-link) */
 	content: string;
+	/** vis-timeline item type. Omit to use vis defaults (box, or range when `end` is set). */
+	type?: TimelineItemType;
 	group?: string;
 	className?: string;
 	title?: string;

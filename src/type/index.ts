@@ -3,6 +3,7 @@ export type {
 	TimelineDate,
 	TimelineGroupInput,
 	TimelineItemInput,
+	TimelineItemType,
 	TimelineMarkerInput,
 	TimelineRenderInput,
 } from './timeline-render';

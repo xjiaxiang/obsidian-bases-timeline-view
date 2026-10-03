@@ -63,15 +63,16 @@ type TimelineRenderInput = {
 
 #### `TimelineItemInput`
 
-| Field       | Type           | Required | Description                                                         |
-| ----------- | -------------- | -------- | ------------------------------------------------------------------- |
-| `start`     | `TimelineDate` | yes      | Start time                                                          |
-| `content`   | `string`       | yes      | Display content: plain text or HTML (may include `a.internal-link`) |
-| `end`       | `TimelineDate` | no       | If set, drawn as a range                                            |
-| `id`        | `string`       | no       | Stable id (prefer note path)                                        |
-| `group`     | `string`       | no       | Swimlane id                                                         |
-| `className` | `string`       | no       | CSS class                                                           |
-| `title`     | `string`       | no       | Native hover title                                                  |
+| Field       | Type                          | Required | Description                                                                               |
+| ----------- | ----------------------------- | -------- | ----------------------------------------------------------------------------------------- |
+| `start`     | `TimelineDate`                | yes      | Start time                                                                                |
+| `content`   | `string`                      | yes      | Display content: plain text or HTML (may include `a.internal-link`)                       |
+| `end`       | `TimelineDate`                | no       | If set, vis-timeline defaults to a range                                                  |
+| `type`      | `'box' \| 'point' \| 'range'` | no       | vis-timeline item type. Omit to use vis defaults. Not read from Bases / note frontmatter. |
+| `id`        | `string`                      | no       | Stable id (prefer note path)                                                              |
+| `group`     | `string`                      | no       | Swimlane id                                                                               |
+| `className` | `string`                      | no       | CSS class                                                                                 |
+| `title`     | `string`                      | no       | Native hover title                                                                        |
 
 #### `TimelineBackgroundInput`
 
