@@ -1,6 +1,7 @@
 import type { DataItem, TimelineOptions } from 'vis-timeline/esnext';
 import { Timeline } from 'vis-timeline/esnext';
 import { DataSet } from 'vis-data';
+import { parseTimelineDate } from './normalize-vis-date';
 import type {
 	TimelineGroupInput,
 	TimelineRenderInput,
@@ -20,10 +21,13 @@ export function drawVisTimeline(
 	const groups = buildGroups(input);
 
 	for (const item of input.items ?? []) {
+		const start = parseTimelineDate(item.start);
+		const end = item.end == null ? undefined : parseTimelineDate(item.end);
+		if (!start || (item.end != null && !end)) continue;
 		items.add({
 			id: item.id,
-			start: item.start,
-			end: item.end,
+			start,
+			end,
 			content: item.content,
 			type: item.type,
 			group: item.group,
@@ -33,10 +37,13 @@ export function drawVisTimeline(
 	}
 
 	for (const bg of input.backgrounds ?? []) {
+		const start = parseTimelineDate(bg.start);
+		const end = parseTimelineDate(bg.end);
+		if (!start || !end) continue;
 		items.add({
 			id: bg.id,
-			start: bg.start,
-			end: bg.end,
+			start,
+			end,
 			content: bg.content ?? '',
 			group: bg.group,
 			className: bg.className,
@@ -44,7 +51,6 @@ export function drawVisTimeline(
 			type: 'background',
 		});
 	}
-
 
 	const timelineOptions: TimelineOptions = {
 		showCurrentTime: false,
@@ -82,7 +88,9 @@ export function drawVisTimeline(
 			: new Timeline(containerEl, items, timelineOptions);
 
 	for (const marker of input.markers ?? []) {
-		const id = timeline.addCustomTime(marker.time, marker.id);
+		const time = parseTimelineDate(marker.time);
+		if (!time) continue;
+		const id = timeline.addCustomTime(time, marker.id);
 		if (marker.title) {
 			// Timeline typings omit setCustomTimeMarker; runtime supports it.
 			(

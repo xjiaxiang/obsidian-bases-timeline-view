@@ -250,8 +250,10 @@ Previewing these blocks requires the [Dataview](https://github.com/blacksmithgu/
 
 ## Tips
 
-- Bases views and `api` / `api.dv.render` share the same date normalization (string, `Date`, number → moment → `YYYY-MM-DD`).
-- Incomplete inputs like `"2025"` or `"2025-01"` are completed by moment into full dates (for example `2025-01-01`). If a property only needs to represent a year or year-month, you can use a **text** type, but rendering still normalizes to `YYYY-MM-DD`.
+- Bases views and `api.render` / `api.dv.render` accept calendar strings (`YYYY`, `YYYY-MM`, `YYYY-MM-DD`), integer numeric years, and JavaScript `Date` objects. Numbers represent years, not millisecond timestamps.
+- Missing months/days default to January/1: `"2025"` → `2025-01-01`, `"2025-03"` → `2025-03-01`. Use text properties for partial dates or BCE dates in Bases.
+- Negative years are supported: `"-0044"`, `"-0044-03"`, `"-0044-03-15"`, or `-44`. Years follow JavaScript astronomical numbering: `0000` = 1 BCE, `-0001` = 2 BCE. Expanded ISO years are used internally.
+- Calendar dates use UTC midnight; Bases / Dataview normalize `Date` objects to their UTC day. Invalid dates are rejected. The supported UTC boundaries are `-271821-04-20` and `+275760-09-13` (partial dates must also resolve within these bounds).
 
 ## Installation
 

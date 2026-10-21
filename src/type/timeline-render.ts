@@ -1,5 +1,33 @@
-/** Date accepted by the timeline render API (normalized to string before draw when via Bases / api.dv). */
-export type TimelineDate = string | number | Date;
+/** Calendar-fields object, e.g. a Luxon DateTime from Dataview.
+ * `month` is 1–12; time fields default to 0. Fields are read in the object's
+ * own zone, so the calendar day matches what Dataview shows. */
+export type TimelineCalendarDate = {
+	readonly year: number;
+	readonly month: number;
+	readonly day: number;
+	readonly hour?: number;
+	readonly minute?: number;
+	readonly second?: number;
+	readonly millisecond?: number;
+};
+
+/** Moment-style accessors (Obsidian's moment); `month()` is 0-based. */
+export type TimelineMomentDate = {
+	readonly year: () => number;
+	readonly month: () => number;
+	readonly date: () => number;
+};
+
+/** Calendar string (YYYY / YYYY-MM / YYYY-MM-DD), numeric year, Date,
+ * Luxon DateTime (Dataview), or Moment.
+ * Negative years use astronomical numbering (0 = 1 BCE, -1 = 2 BCE).
+ * Date objects use their UTC day in Bases / api.dv adapters. */
+export type TimelineDate =
+	| string
+	| number
+	| Date
+	| TimelineCalendarDate
+	| TimelineMomentDate;
 
 export type TimelineItemType = 'box' | 'point' | 'range';
 

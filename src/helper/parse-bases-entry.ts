@@ -6,7 +6,7 @@ import {
 	Value,
 	getAllTags,
 } from 'obsidian';
-import { normalizeVisDate } from './normalize-vis-date';
+import { compareTimelineDates, normalizeVisDate } from './normalize-vis-date';
 
 export type ParsedBasesEntry = {
 	path: string;
@@ -35,9 +35,7 @@ export function parseBasesEntry(
 
 	const content = getContent(entry, config);
 	const title =
-		!!content && content.isTruthy()
-			? content.toString()
-			: entry.file.basename;
+		!!content && content.isTruthy() ? content.toString() : entry.file.basename;
 
 	const cache = app.metadataCache.getFileCache(entry.file);
 	const frontmatter = cache?.frontmatter ?? {};
@@ -95,8 +93,7 @@ function getClassName(
 	const customField = config.getAsPropertyId('classNameField');
 	const value = customField
 		? entry.getValue(customField)
-		: entry.getValue('note.cssclasses') ||
-			entry.getValue('formula.cssclasses');
+		: entry.getValue('note.cssclasses') || entry.getValue('formula.cssclasses');
 
 	return valueToClassName(value);
 }
@@ -152,7 +149,7 @@ function valueToOptionalString(value: Value | null): string | undefined {
 }
 
 function getValidDate(start: Value | null, end?: Value | null) {
-	if (!start || !start.isTruthy()) {
+	if (!start || start.toString() === '') {
 		return {
 			start: undefined,
 			end: undefined,
@@ -167,7 +164,7 @@ function getValidDate(start: Value | null, end?: Value | null) {
 		};
 	}
 
-	if (!end || !end.isTruthy()) {
+	if (!end || end.toString() === '') {
 		return {
 			start: normalizedStart,
 		};
@@ -181,7 +178,9 @@ function getValidDate(start: Value | null, end?: Value | null) {
 		};
 	}
 
-	const [sortedStart, sortedEnd] = [normalizedStart, normalizedEnd].sort();
+	const [sortedStart, sortedEnd] = [normalizedStart, normalizedEnd].sort(
+		compareTimelineDates,
+	);
 	return {
 		start: sortedStart,
 		end: sortedEnd,
