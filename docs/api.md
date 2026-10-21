@@ -122,13 +122,14 @@ api.dv.render(
 
 ### Parameters (`DataviewRenderSources`)
 
-| Field         | Type                                   | Required | Description                            |
-| ------------- | -------------------------------------- | -------- | -------------------------------------- |
-| `items`       | `DataviewPageLike[]` / Iterable        | no       | Normal event pages                     |
-| `backgrounds` | `DataviewPageLike[]` / Iterable        | no       | Background pages (need start + end)    |
-| `markers`     | page list or `{ time, title?, id? }[]` | no       | Pages use start as time; or literals   |
-| `fields`      | `DataviewFieldMap`                     | no       | Page property → timeline field mapping |
-| `options`     | `TimelineOptions`                      | no       | Passed through to vis-timeline         |
+| Field         | Type                                   | Required | Description                                                       |
+| ------------- | -------------------------------------- | -------- | ----------------------------------------------------------------- |
+| `items`       | `DataviewPageLike[]` / Iterable        | no       | Normal event pages                                                |
+| `backgrounds` | `DataviewPageLike[]` / Iterable        | no       | Background pages (need start + end)                               |
+| `markers`     | page list or `{ time, title?, id? }[]` | no       | Pages use start as time; or literals                              |
+| `groups`      | `TimelineGroupInput[]`                 | no       | Swimlanes; custom `content` labels override inferred labels by id |
+| `fields`      | `DataviewFieldMap`                     | no       | Page property → timeline field mapping                            |
+| `options`     | `TimelineOptions`                      | no       | Passed through to vis-timeline                                    |
 
 `DataviewPageLike`: any page-like object with `file.path` / `file.name`; may include an own `group` property as a swimlane override.
 

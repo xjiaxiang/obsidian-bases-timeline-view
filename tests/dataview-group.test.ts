@@ -45,6 +45,29 @@ describe('pagesToRenderInput group override', () => {
 		);
 	});
 
+	it('uses provided group labels and adds groups inferred from entries', () => {
+		const input = pagesToRenderInput({
+			items: [
+				{
+					file: { path: 'a.md', name: 'a' },
+					start: '2020-01-01',
+					group: 'dynasty-tang',
+				},
+				{
+					file: { path: 'b.md', name: 'b' },
+					start: '2021-01-01',
+					group: 'dynasty-song',
+				},
+			],
+			groups: [{ id: 'dynasty-tang', content: '唐朝' }],
+		});
+
+		expect(input.groups).toEqual([
+			{ id: 'dynasty-tang', content: '唐朝' },
+			{ id: 'dynasty-song', content: 'dynasty-song' },
+		]);
+	});
+
 	it('allows items and backgrounds to use different manual groups', () => {
 		const input = pagesToRenderInput({
 			items: [

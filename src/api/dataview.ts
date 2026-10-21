@@ -12,6 +12,7 @@ import type {
 	TimelineDate,
 	TimelineItemInput,
 	TimelineMarkerInput,
+	TimelineGroupInput,
 	TimelineRenderInput,
 } from '../type/timeline-render';
 
@@ -61,6 +62,7 @@ export type DataviewRenderSources = {
 	markers?:
 		| Iterable<DataviewPageLike | DataviewMarkerLiteral>
 		| Array<DataviewPageLike | DataviewMarkerLiteral>;
+	groups?: TimelineGroupInput[];
 	fields?: DataviewFieldMap;
 	options?: TimelineOptions;
 };
@@ -201,10 +203,15 @@ export function pagesToRenderInput(
 		});
 	}
 
-	const groups =
-		groupIds.size > 0
-			? [...groupIds].map((id) => ({ id, content: id }))
-			: undefined;
+	const groupsById = new Map(
+		(sources.groups ?? []).map((group) => [group.id, group]),
+	);
+	for (const id of groupIds) {
+		if (!groupsById.has(id)) {
+			groupsById.set(id, { id, content: id });
+		}
+	}
+	const groups = groupsById.size > 0 ? [...groupsById.values()] : undefined;
 
 	return { items, backgrounds, markers, groups };
 }
