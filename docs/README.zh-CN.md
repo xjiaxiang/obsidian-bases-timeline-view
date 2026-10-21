@@ -159,10 +159,10 @@ cssclasses:
 
 需要自行查询数据时（例如 DataviewJS），使用插件暴露的 `api`：
 
-| 方法                                       | 适用场景                                                     |
-| ------------------------------------------ | ------------------------------------------------------------ |
-| `api.render(containerEl, input, options?)` | 已整理好的通用数据结构，完全自控                             |
-| `api.dv.render(containerEl, sources)`      | 直接传入 Dataview 页面列表，插件负责字段映射与默认 item 模板 |
+| 方法                                            | 适用场景                                                     |
+| ----------------------------------------------- | ------------------------------------------------------------ |
+| `api.render(containerEl, input, options?)`      | 已整理好的通用数据结构，完全自控                             |
+| `api.dv.render(containerEl, sources, options?)` | 直接传入 Dataview 页面列表，插件负责字段映射与默认 item 模板 |
 
 插件 id：`bases-timeline-view`。
 

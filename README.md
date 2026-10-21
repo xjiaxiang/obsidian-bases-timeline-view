@@ -157,10 +157,10 @@ Timeline items also expose tags and frontmatter as `data-` attributes for CSS se
 
 When you need to query data yourself (for example with DataviewJS), use the plugin's exposed `api`:
 
-| Method                                     | When to use                                                                          |
-| ------------------------------------------ | ------------------------------------------------------------------------------------ |
-| `api.render(containerEl, input, options?)` | You already have a generic data structure and want full control                      |
-| `api.dv.render(containerEl, sources)`      | Pass Dataview page lists directly; the plugin maps fields and default item templates |
+| Method                                          | When to use                                                                          |
+| ----------------------------------------------- | ------------------------------------------------------------------------------------ |
+| `api.render(containerEl, input, options?)`      | You already have a generic data structure and want full control                      |
+| `api.dv.render(containerEl, sources, options?)` | Pass Dataview page lists directly; the plugin maps fields and default item templates |
 
 Plugin id: `bases-timeline-view`.
 

@@ -64,7 +64,6 @@ export type DataviewRenderSources = {
 		| Array<DataviewPageLike | DataviewMarkerLiteral>;
 	groups?: TimelineGroupInput[];
 	fields?: DataviewFieldMap;
-	options?: TimelineOptions;
 };
 
 export type DataviewRenderContext = {
@@ -90,12 +89,13 @@ export function renderFromDataview(
 	containerEl: HTMLElement,
 	sources: DataviewRenderSources,
 	ctx?: DataviewRenderContext,
+	options?: TimelineOptions,
 ) {
 	const input = pagesToRenderInput(sources, ctx?.app);
 	if (ctx) {
 		reattachTimelineLinkHandlers(containerEl, ctx.app, ctx.hoverParent);
 	}
-	return drawVisTimeline(containerEl, input, sources.options);
+	return drawVisTimeline(containerEl, input, options);
 }
 
 export function pagesToRenderInput(

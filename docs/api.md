@@ -2,10 +2,10 @@
 
 When you need to query data yourself (e.g. DataviewJS), use the plugin `api`:
 
-| Method                                     | When to use                                                                           |
-| ------------------------------------------ | ------------------------------------------------------------------------------------- |
-| `api.render(containerEl, input, options?)` | You already have a generic data shape and want full control                           |
-| `api.dv.render(containerEl, sources)`      | Pass Dataview page lists; the plugin maps fields and builds the default item template |
+| Method                                          | When to use                                                                           |
+| ----------------------------------------------- | ------------------------------------------------------------------------------------- |
+| `api.render(containerEl, input, options?)`      | You already have a generic data shape and want full control                           |
+| `api.dv.render(containerEl, sources, options?)` | Pass Dataview page lists; the plugin maps fields and builds the default item template |
 
 Plugin id: `bases-timeline-view`.
 
@@ -105,7 +105,7 @@ type TimelineRenderInput = {
 
 ---
 
-## `api.dv.render(containerEl, sources)`
+## `api.dv.render(containerEl, sources, options?)`
 
 Maps Dataview page lists, builds the same item HTML as the Bases Timeline view (date line + note link + frontmatter/tags `data-*`), and wires click + Page Preview.
 
@@ -117,6 +117,7 @@ Requires [Dataview](https://github.com/blacksmithgu/obsidian-dataview).
 api.dv.render(
   containerEl: HTMLElement,
   sources: DataviewRenderSources,
+  options?: TimelineOptions,
 ): Timeline
 ```
 
@@ -129,7 +130,8 @@ api.dv.render(
 | `markers`     | page list or `{ time, title?, id? }[]` | no       | Pages use start as time; or literals                              |
 | `groups`      | `TimelineGroupInput[]`                 | no       | Swimlanes; custom `content` labels override inferred labels by id |
 | `fields`      | `DataviewFieldMap`                     | no       | Page property → timeline field mapping                            |
-| `options`     | `TimelineOptions`                      | no       | Passed through to vis-timeline                                    |
+
+The optional `options` argument is passed through to vis-timeline.
 
 `DataviewPageLike`: any page-like object with `file.path` / `file.name`; may include an own `group` property as a swimlane override.
 

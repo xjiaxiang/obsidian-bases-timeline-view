@@ -94,11 +94,15 @@ export default class BasesTimelineViewPlugin extends Plugin {
 		},
 		/** DataviewJS helpers: pass page lists instead of mapping by hand */
 		dv: {
-			render: (containerEl: HTMLElement, sources: DataviewRenderSources) =>
+			render: (
+				containerEl: HTMLElement,
+				sources: DataviewRenderSources,
+				options?: TimelineOptions,
+			) =>
 				renderFromDataview(containerEl, sources, {
 					app: this.app,
 					hoverParent: this,
-				}),
+				}, options),
 		},
 	};
 }
