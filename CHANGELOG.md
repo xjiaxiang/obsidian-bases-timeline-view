@@ -1,5 +1,14 @@
 # Changelog
 
+## [1.7.0](https://github.com/xjiaxiang/obsidian-bases-timeline-view/compare/1.6.0...1.7.0) (2026-10-21)
+
+
+### Features
+
+* add support for groups in pagesToRenderInput and update API documentation ([553d6c4](https://github.com/xjiaxiang/obsidian-bases-timeline-view/commit/553d6c49411da4738e7d2757c7ec7056c358056b))
+* enhance date handling with detailed calendar and moment types ([321c3b5](https://github.com/xjiaxiang/obsidian-bases-timeline-view/commit/321c3b5c91dd1458f6428513ce2e8c0ecf367c67))
+* update API to include options parameter for Dataview methods ([f1996f3](https://github.com/xjiaxiang/obsidian-bases-timeline-view/commit/f1996f3f6cd096cb95a8276663ad6e28efa2b811))
+
 ## [1.6.0](https://github.com/xjiaxiang/obsidian-bases-timeline-view/compare/1.5.0...1.6.0) (2026-10-03)
 
 
