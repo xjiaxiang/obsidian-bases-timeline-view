@@ -15,6 +15,7 @@ if (!api) {
       id: 'notes/event-b.md',
       start: '2025-02-10',
       content: 'Event B',
+			type: "point",
       group: 'Design',
     },
   ];

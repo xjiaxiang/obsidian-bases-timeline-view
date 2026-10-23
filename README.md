@@ -57,6 +57,19 @@ Default frontmatter properties:
 | endLabel   | Display label for the end date       | No       | end               |                                                            |
 | cssclasses | CSS classes attached to the vis item | No       | phase-bg          | Built-in Obsidian list property; join multiple with spaces |
 
+> Supported time formats:
+>
+> - **Text (string)**:
+>   - `YYYY`, e.g. `2025` → `2025-01-01`
+>   - `YYYY-MM`, e.g. `2025-03` → `2025-03-01`
+>   - `YYYY-MM-DD`, e.g. `2025-03-15`
+>   - ISO date-time, e.g. `2025-03-15T12:30:00`; only the date part is used
+>   - Signed/extended years, e.g. `-0044`, `-0044-03-15`, `+010000-01-01`
+> - **Number**: an integer year, e.g. `2025` → `2025-01-01` (not a timestamp)
+> - **Date**: an Obsidian frontmatter property of type Date / Date & time; the selected date is used as-is
+>
+> Month and day must be zero-padded (`2025-1`, `2025-3-5` are not supported); `2025/03/15`, natural-language dates, and impossible dates such as `2025-02-30` are skipped.
+
 ### Custom fields
 
 If you prefer not to use the default property names, specify custom fields in the view, for example:
