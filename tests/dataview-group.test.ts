@@ -3,7 +3,7 @@ import { pagesToRenderInput } from '../src/api/dataview';
 import { OTHER_GROUP_ID } from '../src/helper/timeline-group';
 
 describe('pagesToRenderInput group override', () => {
-	it('lets element.group override fields.group', () => {
+	it('lets fields.group take precedence over element.group', () => {
 		const input = pagesToRenderInput({
 			items: [
 				{
@@ -21,7 +21,7 @@ describe('pagesToRenderInput group override', () => {
 			fields: { group: 'dynasty' },
 		});
 
-		expect(input.items?.map((i) => i.group)).toEqual(['手动唐', '宋']);
+		expect(input.items?.map((i) => i.group)).toEqual(['唐', '宋']);
 	});
 
 	it('supports grouping with only manual element.group (no fields.group)', () => {

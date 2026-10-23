@@ -63,16 +63,16 @@ type TimelineRenderInput = {
 
 #### `TimelineItemInput`
 
-| Field       | Type                          | Required | Description                                                                               |
-| ----------- | ----------------------------- | -------- | ----------------------------------------------------------------------------------------- |
-| `start`     | `TimelineDate`                | yes      | Start time                                                                                |
-| `content`   | `string`                      | yes      | Display content: plain text or HTML (may include `a.internal-link`)                       |
-| `end`       | `TimelineDate`                | no       | If set, vis-timeline defaults to a range                                                  |
-| `type`      | `'box' \| 'point' \| 'range'` | no       | vis-timeline item type. Omit to use vis defaults. Not read from Bases / note frontmatter. |
-| `id`        | `string`                      | no       | Stable id (prefer note path)                                                              |
-| `group`     | `string`                      | no       | Swimlane id                                                                               |
-| `className` | `string`                      | no       | CSS class                                                                                 |
-| `title`     | `string`                      | no       | Native hover title                                                                        |
+| Field       | Type                          | Required | Description                                                                                           |
+| ----------- | ----------------------------- | -------- | ----------------------------------------------------------------------------------------------------- |
+| `start`     | `TimelineDate`                | yes      | Start time                                                                                            |
+| `content`   | `string`                      | yes      | Display content: plain text or HTML (may include `a.internal-link`)                                   |
+| `end`       | `TimelineDate`                | no       | If set, vis-timeline defaults to a range                                                              |
+| `type`      | `'box' \| 'point' \| 'range'` | no       | vis-timeline item type. Omit to use vis defaults. See `fields.type` / the view's **item type field**. |
+| `id`        | `string`                      | no       | Stable id (prefer note path)                                                                          |
+| `group`     | `string`                      | no       | Swimlane id                                                                                           |
+| `className` | `string`                      | no       | CSS class                                                                                             |
+| `title`     | `string`                      | no       | Native hover title                                                                                    |
 
 #### `TimelineBackgroundInput`
 
@@ -133,7 +133,7 @@ api.dv.render(
 
 The optional `options` argument is passed through to vis-timeline.
 
-`DataviewPageLike`: any page-like object with `file.path` / `file.name`; may include an own `group` property as a swimlane override.
+`DataviewPageLike`: any page-like object with `file.path` / `file.name`; may include own `group` (swimlane) and `type` (`box` / `point` / `range`) properties. These are used only when the corresponding `fields` mapping is not configured.
 
 ### `fields` (`DataviewFieldMap`)
 
@@ -143,20 +143,24 @@ The optional `options` argument is passed through to vis-timeline.
 | `end`        | `end`                       | End date property                                                  |
 | `content`    | `content`, else `file.name` | Title text property                                                |
 | `className`  | `cssclasses`                | CSS class property (lists joined with spaces)                      |
-| `group`      | none                        | Swimlane property; **element `group` wins**                        |
+| `type`       | none                        | Item type property; when unset, a valid element `type` is used     |
+| `group`      | none                        | Swimlane property; when unset, element `group` is used             |
 | `startLabel` | none                        | Display label property for the date line start                     |
 | `endLabel`   | none                        | Display label property for the date line end                       |
 
 ### Mapping behavior
 
-| Page side                               | Timeline side                                  |
-| --------------------------------------- | ---------------------------------------------- |
-| `file.path`                             | item/background/marker `id`; item link target  |
-| dates from `fields` / defaults          | via `normalizeVisDate` → `YYYY-MM-DD`          |
-| item                                    | HTML: date line + `a.internal-link` + `data-*` |
-| background                              | plain-text `content` (title), no link template |
-| marker (page)                           | `time` ← start, `title` ← content              |
-| element own `group`                     | overrides `fields.group`                       |
-| some rows have group, this row does not | swimlane id `Other`                            |
+| Page side                               | Timeline side                                                        |
+| --------------------------------------- | -------------------------------------------------------------------- |
+| `file.path`                             | item/background/marker `id`; item link target                        |
+| dates from `fields` / defaults          | via `normalizeVisDate` → `YYYY-MM-DD`                                |
+| item                                    | HTML: date line + `a.internal-link` + `data-*`                       |
+| background                              | plain-text `content` (title), no link template                       |
+| marker (page)                           | `time` ← start, `title` ← content                                    |
+| `fields.group` / element `group`        | swimlane id; explicit `fields.group` wins                            |
+| `fields.type` / element `type`          | item `type` (`box` / `point` / `range`); explicit `fields.type` wins |
+| some rows have group, this row does not | swimlane id `Other`                                                  |
+
+Type values must match `box` / `point` / `range` exactly (case-sensitive, same as vis-timeline). A `point` item is drawn at `start`: vis-timeline ignores its `end`, and the generated date line shows only the start. Unknown type values are ignored with a warning (`fields.type`) or silently (`element type`, since a page's own `type` is often unrelated frontmatter).
 
 Items without start, backgrounds missing start/end, and markers with invalid time are skipped (`console.warn`) without aborting the whole chart.

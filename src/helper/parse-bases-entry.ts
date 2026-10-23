@@ -7,6 +7,8 @@ import {
 	getAllTags,
 } from 'obsidian';
 import { compareTimelineDates, normalizeVisDate } from './normalize-vis-date';
+import { normalizeItemType } from './timeline-item-type';
+import type { TimelineItemType } from '../type/timeline-render';
 
 export type ParsedBasesEntry = {
 	path: string;
@@ -16,6 +18,7 @@ export type ParsedBasesEntry = {
 	startLabel?: string;
 	endLabel?: string;
 	className?: string;
+	type?: TimelineItemType;
 	frontmatter: Record<string, unknown>;
 	tags: string[];
 };
@@ -49,6 +52,7 @@ export function parseBasesEntry(
 		startLabel: valueToOptionalString(getStartLabel(entry, config)) || start,
 		endLabel: valueToOptionalString(getEndLabel(entry, config)) || end,
 		className: getClassName(entry, config),
+		type: getItemType(entry, config),
 		frontmatter,
 		tags,
 	};
@@ -96,6 +100,25 @@ function getClassName(
 		: entry.getValue('note.cssclasses') || entry.getValue('formula.cssclasses');
 
 	return valueToClassName(value);
+}
+
+/**
+ * Read the optional vis item type property (`box` | `point` | `range`).
+ * Not read unless the view's `itemTypeField` option is set.
+ */
+function getItemType(
+	entry: BasesEntry,
+	config: BasesViewConfig,
+): TimelineItemType | undefined {
+	const customField = config.getAsPropertyId('itemTypeField');
+	if (!customField) {
+		return undefined;
+	}
+	const value = entry.getValue(customField);
+	if (!value || !value.isTruthy()) {
+		return undefined;
+	}
+	return normalizeItemType(value.toString(), `entry ${entry.file.path}`);
 }
 
 function valueToClassName(value: Value | null): string | undefined {

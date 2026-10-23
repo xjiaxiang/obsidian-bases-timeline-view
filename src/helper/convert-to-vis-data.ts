@@ -91,6 +91,7 @@ export function convertToVisData(
 				id: entry.file.path,
 				start: parsed.start,
 				end: parsed.end,
+				type: parsed.type,
 				content: buildItemContentHtml({
 					path: parsed.path,
 					title: parsed.title,
@@ -98,6 +99,7 @@ export function convertToVisData(
 					end: parsed.end,
 					startLabel: parsed.startLabel,
 					endLabel: parsed.endLabel,
+					type: parsed.type,
 					frontmatter: parsed.frontmatter,
 					tags: parsed.tags,
 				}),

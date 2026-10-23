@@ -113,6 +113,25 @@ views:
 > - 同时命中时的优先级：**marker** > **background** > **item**。
 > - background同样支持group特性，可以按group分组绘制。
 
+### 条目类型
+
+默认情况下，设置了 `end` 的条目的 vis-timeline 类型是 range，否则是 box。若想逐条指定，可把视图的 **item type field** 指向一个值为 `box`、`point` 或 `range` 的属性：
+
+```base
+views:
+  - type: timeline-view
+    name: moment of 2025
+    itemTypeField: note.timelineType
+```
+
+```markdown
+timelineType: point
+```
+
+- 取值必须是精确的 `box`、`point` 或 `range`（区分大小写，与 vis-timeline 一致）；无法识别的值会回退到 vis 默认行为。
+- `point` 条目会在 `start` 处绘制为圆点，`end` 与 `endLabel` 会被忽略。
+- 只有配置了 **item type field** 才会读取该属性，因此笔记里无关的 `type:` frontmatter 不会造成影响。
+
 ### 自定义样式
 
 利用Obsidian内置的样式扩展能力和时间线插件提供的扩展能力，可以自定义时间线的样式。

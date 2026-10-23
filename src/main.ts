@@ -70,6 +70,11 @@ export default class BasesTimelineViewPlugin extends Plugin {
 					default: 'note.cssclasses',
 				},
 				{
+					key: 'itemTypeField',
+					type: 'property',
+					displayName: 'item type field',
+				},
+				{
 					key: 'backgroundWhen',
 					type: 'property',
 					displayName: 'background when',

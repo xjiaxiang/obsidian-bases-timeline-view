@@ -111,6 +111,25 @@ views:
 > - When multiple roles match, priority is: **marker** > **background** > **item**.
 > - Backgrounds also support grouping and can be drawn by group.
 
+### Item types
+
+By default vis-timeline draws an item as a range when `end` is set, otherwise as a box. To control this per note, point the view's **item type field** at a property whose value is `box`, `point`, or `range`:
+
+```base
+views:
+  - type: timeline-view
+    name: moment of 2025
+    itemTypeField: note.timelineType
+```
+
+```markdown
+timelineType: point
+```
+
+- Values must be exactly `box`, `point`, or `range` (case-sensitive, same as vis-timeline); unknown values fall back to the vis default.
+- A `point` item is drawn as a dot at `start`; `end` and `endLabel` are ignored.
+- The property is not read unless **item type field** is configured, so an unrelated frontmatter `type:` is harmless.
+
 ### Custom styles
 
 Use Obsidian's built-in style extensions together with this plugin's hooks to customize the timeline look.

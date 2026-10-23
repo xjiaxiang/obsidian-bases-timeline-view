@@ -71,6 +71,19 @@ describe('buildItemContentHtml', () => {
 				}),
 			).toContain('>2025-01-01 - End of year<br><a');
 		});
+
+		it('omits end and endLabel for point items', () => {
+			expect(
+				buildItemContentHtml({
+					path: 'notes/a.md',
+					title: 'Note A',
+					start: '2025-01-01',
+					end: '2025-12-31',
+					endLabel: 'End of year',
+					type: 'point',
+				}),
+			).toContain('>2025-01-01<br><a');
+		});
 	});
 
 	describe('data attributes', () => {

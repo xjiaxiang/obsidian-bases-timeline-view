@@ -7,10 +7,12 @@ import { normalizeVisDate } from '../helper/normalize-vis-date';
 import { resolveTimelineGroupId, normalizeGroupKey } from '../helper/timeline-group';
 import { reattachTimelineLinkHandlers } from '../helper/timeline-link-handlers';
 import { buildItemContentHtml } from '../helper/timeline-item-content';
+import { normalizeItemType } from '../helper/timeline-item-type';
 import type {
 	TimelineBackgroundInput,
 	TimelineDate,
 	TimelineItemInput,
+	TimelineItemType,
 	TimelineMarkerInput,
 	TimelineGroupInput,
 	TimelineRenderInput,
@@ -23,10 +25,15 @@ export type DataviewPageLike = Record<string, unknown> & {
 		name?: string;
 	};
 	/**
-	 * Manual swimlane id. When present on the object (own property),
-	 * overrides {@link DataviewFieldMap.group}.
+	 * Manual swimlane id (own property). Only used when
+	 * {@link DataviewFieldMap.group} is not configured.
 	 */
 	group?: unknown;
+	/**
+	 * Manual item type (own property). Only used when
+	 * {@link DataviewFieldMap.type} is not configured.
+	 */
+	type?: unknown;
 };
 
 export type DataviewMarkerLiteral = {
@@ -45,8 +52,13 @@ export type DataviewFieldMap = {
 	/** default: cssclasses */
 	className?: string;
 	/**
-	 * Page property used as swimlane id when the element does not set `group`.
-	 * Element-level `group` always wins.
+	 * Page property holding the vis item type (`box` | `point` | `range`).
+	 * Takes precedence over an own `type` on the element.
+	 */
+	type?: string;
+	/**
+	 * Page property used as swimlane id.
+	 * Takes precedence over an own `group` on the element.
 	 */
 	group?: string;
 	/** optional display label for start (falls back to normalized start) */
@@ -77,6 +89,7 @@ type MappedPageFields = {
 	end?: string;
 	content: string;
 	className?: string;
+	type?: TimelineItemType;
 	group?: string;
 	startLabel?: string;
 	endLabel?: string;
@@ -147,6 +160,7 @@ export function pagesToRenderInput(
 			id: mapped.id,
 			start: mapped.start!,
 			end: mapped.end,
+			type: mapped.type,
 			content: buildItemContentHtml({
 				path: mapped.id || mapped.content,
 				title: mapped.content,
@@ -154,6 +168,7 @@ export function pagesToRenderInput(
 				end: mapped.end,
 				startLabel: mapped.startLabel,
 				endLabel: mapped.endLabel,
+				type: mapped.type,
 				frontmatter,
 				tags,
 			}),
@@ -222,6 +237,7 @@ function normalizeFields(fields?: DataviewFieldMap): DataviewFieldMap {
 		end: fields?.end ?? 'end',
 		content: fields?.content ?? 'content',
 		className: fields?.className ?? 'cssclasses',
+		type: fields?.type,
 		group: fields?.group,
 		startLabel: fields?.startLabel,
 		endLabel: fields?.endLabel,
@@ -240,6 +256,7 @@ function mapPageFields(page: DataviewPageLike, fields: DataviewFieldMap) {
 		id ||
 		'';
 	const className = readClassName(page, fields.className ?? 'cssclasses');
+	const type = resolvePageType(page, fields);
 	const group = resolvePageGroup(page, fields);
 	const startLabel = fields.startLabel
 		? readString(page, fields.startLabel)
@@ -254,6 +271,7 @@ function mapPageFields(page: DataviewPageLike, fields: DataviewFieldMap) {
 		end,
 		content,
 		className,
+		type,
 		group,
 		startLabel: startLabel || start,
 		endLabel: endLabel || end,
@@ -261,17 +279,40 @@ function mapPageFields(page: DataviewPageLike, fields: DataviewFieldMap) {
 }
 
 /**
- * Prefer element-level `group` (manual override) over `fields.group` property lookup.
+ * Explicit `fields.type` wins. Only when it is not configured do we fall back
+ * to a valid own `type` on the element (`{ ...page, type: 'point' }`).
+ * Invalid fallback values are ignored silently: a page's own `type` is often
+ * an unrelated frontmatter field (`book`, `note`, ...).
+ */
+function resolvePageType(
+	page: DataviewPageLike,
+	fields: DataviewFieldMap,
+): TimelineItemType | undefined {
+	if (fields.type) {
+		return normalizeItemType(
+			page[fields.type],
+			`dv item ${page.file?.path ?? '?'}`,
+		);
+	}
+	if (Object.prototype.hasOwnProperty.call(page, 'type')) {
+		return normalizeItemType(page.type);
+	}
+	return undefined;
+}
+
+/**
+ * Explicit `fields.group` wins. Only when it is not configured do we fall back
+ * to an own `group` on the element (`{ ...page, group: 'lane' }`).
  */
 function resolvePageGroup(
 	page: DataviewPageLike,
 	fields: DataviewFieldMap,
 ): string | undefined {
-	if (Object.prototype.hasOwnProperty.call(page, 'group')) {
-		return normalizeGroupKey(stringifyGroupValue(page.group));
-	}
 	if (fields.group) {
 		return normalizeGroupKey(readString(page, fields.group));
+	}
+	if (Object.prototype.hasOwnProperty.call(page, 'group')) {
+		return normalizeGroupKey(stringifyGroupValue(page.group));
 	}
 	return undefined;
 }

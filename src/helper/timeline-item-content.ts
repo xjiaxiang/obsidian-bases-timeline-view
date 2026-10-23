@@ -1,3 +1,5 @@
+import type { TimelineItemType } from '../type/timeline-render';
+
 export type BuildItemContentHtmlInput = {
 	path: string;
 	title: string;
@@ -5,6 +7,8 @@ export type BuildItemContentHtmlInput = {
 	end?: string;
 	startLabel?: string;
 	endLabel?: string;
+	/** `point` items show only the start, matching how vis-timeline draws them. */
+	type?: TimelineItemType;
 	frontmatter?: Record<string, unknown>;
 	tags?: string[];
 };
@@ -29,7 +33,9 @@ function formatDateDescription(input: BuildItemContentHtmlInput): string {
 		return '';
 	}
 
-	const endLabel = input.endLabel || input.end;
+	// vis-timeline ignores `end` for point items; keep the date line consistent.
+	const endLabel =
+		input.type === 'point' ? undefined : input.endLabel || input.end;
 	if (endLabel) {
 		return `${startLabel} - ${endLabel}`;
 	}
