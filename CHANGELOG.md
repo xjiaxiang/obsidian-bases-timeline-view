@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.8.0](https://github.com/xjiaxiang/obsidian-bases-timeline-view/compare/1.7.0...1.8.0) (2026-10-24)
+
+
+### Features
+
+* add item type support for timeline entries and update documentation ([6497027](https://github.com/xjiaxiang/obsidian-bases-timeline-view/commit/6497027fe59d4909f09e0bb85a5a2df52dab630e))
+
 ## [1.7.0](https://github.com/xjiaxiang/obsidian-bases-timeline-view/compare/1.6.0...1.7.0) (2026-10-21)
 
 
