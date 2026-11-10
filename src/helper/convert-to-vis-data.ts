@@ -2,7 +2,14 @@ import { App, BasesEntry, BasesEntryGroup, BasesViewConfig } from 'obsidian';
 import { logger } from './logger';
 import { parseBasesEntry } from './parse-bases-entry';
 import { resolveTimelineGroupId, normalizeGroupKey } from './timeline-group';
-import { buildItemContentHtml } from './timeline-item-content';
+import { orderBackgroundsByGroup } from './background-order';
+import {
+	buildBackgroundClassName,
+	buildBackgroundContentHtml,
+	buildBackgroundDataAttributes,
+	buildGroupContentHtml,
+	buildItemContentHtml,
+} from './timeline-item-content';
 import type {
 	TimelineBackgroundInput,
 	TimelineGroupInput,
@@ -12,6 +19,17 @@ import type {
 } from '../type/timeline-render';
 
 type TimelineRole = 'item' | 'background' | 'marker';
+
+type BackgroundDraft = {
+	id: string;
+	start: string;
+	end: string;
+	title: string;
+	group?: string;
+	className?: string;
+	frontmatter: Record<string, unknown>;
+	tags: string[];
+};
 
 /**
  * Convert Bases grouped entries to generic timeline render input.
@@ -25,7 +43,7 @@ export function convertToVisData(
 	app: App,
 ): TimelineRenderInput {
 	const items: TimelineItemInput[] = [];
-	const backgrounds: TimelineBackgroundInput[] = [];
+	const backgroundDrafts: BackgroundDraft[] = [];
 	const markers: TimelineMarkerInput[] = [];
 	const groups: TimelineGroupInput[] = [];
 	const groupIds = new Set<string>();
@@ -43,7 +61,7 @@ export function convertToVisData(
 			groupIds.add(groupId);
 			groups.push({
 				id: groupId,
-				content: groupId,
+				content: buildGroupContentHtml(groupId),
 			});
 		}
 
@@ -71,13 +89,15 @@ export function convertToVisData(
 					);
 					return;
 				}
-				backgrounds.push({
+				backgroundDrafts.push({
 					id: entry.file.path,
 					start: parsed.start,
 					end: parsed.end,
-					content: parsed.title,
+					title: parsed.title,
 					group: groupId,
 					className: parsed.className,
+					frontmatter: parsed.frontmatter,
+					tags: parsed.tags,
 				});
 				return;
 			}
@@ -104,10 +124,27 @@ export function convertToVisData(
 					tags: parsed.tags,
 				}),
 				group: groupId,
-				className: parsed.className,
+				// outer classname
+				className: `${parsed.className ? parsed.className : ''} timeline-item`,
 			});
 		});
 	}
+
+	const backgrounds: TimelineBackgroundInput[] = orderBackgroundsByGroup(
+		backgroundDrafts,
+	).map(({ background, order }) => ({
+		id: background.id,
+		start: background.start,
+		end: background.end,
+		content: buildBackgroundContentHtml(background.title),
+		dataAttributes: buildBackgroundDataAttributes(
+			background.frontmatter,
+			background.tags,
+			order,
+		),
+		group: background.group,
+		className: buildBackgroundClassName(background.className, order),
+	}));
 
 	return {
 		items,

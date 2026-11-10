@@ -43,6 +43,99 @@ function render(entryValues: Record<string, string>, options: Record<string, str
 	return convertToVisData(groupedData, makeConfig(options), app);
 }
 
+describe('convertToVisData content HTML', () => {
+	it('builds escaped HTML for group labels', () => {
+		const groupedData = [
+			{
+				key: { toString: () => 'A <B>' },
+				entries: [
+					makeEntry('a.md', { 'note.start': '2020-01-01' }),
+				],
+			},
+		] as unknown as BasesEntryGroup[];
+
+		const input = convertToVisData(groupedData, makeConfig({}), app);
+
+		expect(input.groups).toEqual([
+			{
+				id: 'A <B>',
+				content: '<div class="timeline-group">A &lt;B&gt;</div>',
+			},
+		]);
+	});
+
+	it('builds escaped HTML for background labels', () => {
+		const groupedData = [
+			{
+				key: undefined,
+				entries: [
+					makeEntry('bg.md', {
+						'note.start': '2020-01-01',
+						'note.end': '2020-02-01',
+						'note.content': 'Q1 & Q2',
+						'note.isBackground': 'true',
+					}),
+				],
+			},
+		] as unknown as BasesEntryGroup[];
+
+		const input = convertToVisData(
+			groupedData,
+			makeConfig({ backgroundWhen: 'note.isBackground' }),
+			app,
+		);
+
+		expect(input.backgrounds?.[0]?.content).toBe('Q1 &amp; Q2');
+		expect(input.backgrounds?.[0]?.className).toBe(
+			'timeline-background timeline-background-odd',
+		);
+		expect(input.backgrounds?.[0]?.dataAttributes).toEqual({ order: '1' });
+	});
+
+	it('sorts backgrounds inside a group and alternates odd/even', () => {
+		const groupedData = [
+			{
+				key: { toString: () => 'g' },
+				entries: [
+					makeEntry('late.md', {
+						'note.start': '2020-02-01',
+						'note.end': '2020-03-01',
+						'note.content': 'late',
+						'note.isBackground': 'true',
+					}),
+					makeEntry('early.md', {
+						'note.start': '2020-01-01',
+						'note.end': '2020-02-01',
+						'note.content': 'early',
+						'note.isBackground': 'true',
+					}),
+				],
+			},
+		] as unknown as BasesEntryGroup[];
+
+		const input = convertToVisData(
+			groupedData,
+			makeConfig({ backgroundWhen: 'note.isBackground' }),
+			app,
+		);
+
+		expect(input.backgrounds?.map((background) => background.id)).toEqual([
+			'early.md',
+			'late.md',
+		]);
+		expect(input.backgrounds?.[0]?.content).toBe('early');
+		expect(input.backgrounds?.[0]?.className).toBe(
+			'timeline-background timeline-background-odd',
+		);
+		expect(input.backgrounds?.[0]?.dataAttributes).toEqual({ order: '1' });
+		expect(input.backgrounds?.[1]?.content).toBe('late');
+		expect(input.backgrounds?.[1]?.className).toBe(
+			'timeline-background timeline-background-even',
+		);
+		expect(input.backgrounds?.[1]?.dataAttributes).toEqual({ order: '2' });
+	});
+});
+
 describe('convertToVisData item type', () => {
 	it('maps the item type field to the vis item type', () => {
 		const input = render(

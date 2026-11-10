@@ -10,14 +10,22 @@ vi.mock('vis-timeline/esnext', () => ({
 		constructor(...args: unknown[]) {
 			calls.construct(...args);
 		}
+		on = vi.fn();
+		off = vi.fn();
 		addCustomTime = calls.marker;
 	},
 }));
 
+function createContainer(): HTMLElement {
+	return {
+		classList: { add: vi.fn() },
+	} as unknown as HTMLElement;
+}
+
 describe('timeline calendar inputs', () => {
 	it('passes parsed Dates to vis for events, backgrounds and markers', () => {
 		const date = new Date(-8640000000000000);
-		drawVisTimeline({} as HTMLElement, {
+		drawVisTimeline(createContainer(), {
 			items: [
 				{ id: 'bce', start: '-0044', end: '-0043-03', content: '' },
 				{ id: 'year', start: 2025, content: '' },
@@ -49,6 +57,40 @@ describe('timeline calendar inputs', () => {
 		expect(calls.marker).toHaveBeenLastCalledWith(
 			new Date('-000001-03-15T00:00:00.000Z'),
 			undefined,
+		);
+	});
+
+	it('passes background content and classes through to vis', () => {
+		drawVisTimeline(createContainer(), {
+			groups: [{ id: 'g', content: 'G' }],
+			backgrounds: [
+				{
+					id: 'late',
+					start: '2020-02-01',
+					end: '2020-03-01',
+					group: 'g',
+					className:
+						'timeline-background timeline-background-even',
+					content: '<div data-order="2">late</div>',
+				},
+				{
+					id: 'early',
+					start: '2020-01-01',
+					end: '2020-02-01',
+					group: 'g',
+					className:
+						'timeline-background timeline-background-odd',
+					content: '<div data-order="1">early</div>',
+				},
+			],
+		});
+
+		const [, items] = calls.construct.mock.calls.at(-1)!;
+		expect(items.get('early').className).toBe(
+			'timeline-background timeline-background-odd',
+		);
+		expect(items.get('late').className).toBe(
+			'timeline-background timeline-background-even',
 		);
 	});
 });

@@ -48,10 +48,21 @@ export type TimelineBackgroundInput = {
 	id?: string;
 	start: TimelineDate;
 	end: TimelineDate;
+	/**
+	 * Ready-to-insert DOM string (plain text or HTML). The Bases and Dataview
+	 * adapters add order classes to `className` and metadata to
+	 * `dataAttributes`; API callers can supply the same values directly.
+	 */
 	content?: string;
 	group?: string;
 	className?: string;
 	style?: string;
+	/**
+	 * Extra `data-*` attributes applied to the background's item element
+	 * (without the `data-` prefix). The Bases and Dataview adapters fill this
+	 * with order, tags and frontmatter.
+	 */
+	dataAttributes?: Record<string, string>;
 };
 
 export type TimelineMarkerInput = {
@@ -62,9 +73,16 @@ export type TimelineMarkerInput = {
 
 export type TimelineGroupInput = {
 	id: string;
+	/** Ready-to-insert DOM string (plain text or HTML). */
 	content: string;
 	className?: string;
 	order?: number;
+	/**
+	 * Extra properties are exposed as `data-*` attributes on the group's
+	 * label and `.vis-group` elements (`id`, `content`, `className`, `order`
+	 * are reserved).
+	 */
+	[key: string]: unknown;
 };
 
 /**

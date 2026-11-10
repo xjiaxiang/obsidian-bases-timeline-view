@@ -2,6 +2,7 @@ import type { DataItem, TimelineOptions } from 'vis-timeline/esnext';
 import { Timeline } from 'vis-timeline/esnext';
 import { DataSet } from 'vis-data';
 import { parseTimelineDate } from './normalize-vis-date';
+import { applyBackgroundDataAttributes } from './timeline-background-attributes';
 import type {
 	TimelineGroupInput,
 	TimelineRenderInput,
@@ -11,12 +12,18 @@ import 'vis-timeline/styles/vis-timeline-graph2d.css';
 
 /**
  * Draw a vis timeline from generic render input (Bases / DataviewJS / API).
+ *
+ * @note vis can only put background `data-*` attributes on the content
+ * element, so `background.dataAttributes` is applied to the rendered
+ * `.vis-item` box here.
  */
 export function drawVisTimeline(
 	containerEl: HTMLElement,
 	input: TimelineRenderInput,
 	options: TimelineOptions = {},
 ): Timeline {
+
+
 	const items = new DataSet<DataItem>();
 	const groups = buildGroups(input);
 
@@ -36,11 +43,12 @@ export function drawVisTimeline(
 		});
 	}
 
+	const backgroundAttributes = new Map<string, Record<string, string>>();
 	for (const bg of input.backgrounds ?? []) {
 		const start = parseTimelineDate(bg.start);
 		const end = parseTimelineDate(bg.end);
 		if (!start || !end) continue;
-		items.add({
+		const id = items.add({
 			id: bg.id,
 			start,
 			end,
@@ -50,6 +58,9 @@ export function drawVisTimeline(
 			style: bg.style,
 			type: 'background',
 		});
+		if (bg.dataAttributes) {
+			backgroundAttributes.set(String(id), bg.dataAttributes);
+		}
 	}
 
 	const timelineOptions: TimelineOptions = {
@@ -86,6 +97,15 @@ export function drawVisTimeline(
 		groups != null
 			? new Timeline(containerEl, items, groups, timelineOptions)
 			: new Timeline(containerEl, items, timelineOptions);
+
+	// vis writes item dataAttributes to the content element only; backgrounds
+	// need theirs on `.vis-item.vis-background`, which is rebuilt on redraw.
+	if (backgroundAttributes.size > 0) {
+		const decorate = () =>
+			applyBackgroundDataAttributes(timeline, backgroundAttributes);
+		timeline.on('changed', decorate);
+		decorate();
+	}
 
 	for (const marker of input.markers ?? []) {
 		const time = parseTimelineDate(marker.time);

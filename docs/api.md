@@ -76,15 +76,26 @@ type TimelineRenderInput = {
 
 #### `TimelineBackgroundInput`
 
-| Field       | Type           | Required | Description                                |
-| ----------- | -------------- | -------- | ------------------------------------------ |
-| `start`     | `TimelineDate` | yes      | Range start                                |
-| `end`       | `TimelineDate` | yes      | Range end                                  |
-| `content`   | `string`       | no       | Label text                                 |
-| `id`        | `string`       | no       | Stable id                                  |
-| `group`     | `string`       | no       | Limit to one swimlane; omit for full-width |
-| `className` | `string`       | no       | CSS class                                  |
-| `style`     | `string`       | no       | e.g. `background-color: rgba(0,0,0,0.08)`  |
+| Field            | Type                     | Required | Description                                   |
+| ---------------- | ------------------------ | -------- | --------------------------------------------- |
+| `start`          | `TimelineDate`           | yes      | Range start                                   |
+| `end`            | `TimelineDate`           | yes      | Range end                                     |
+| `content`        | `string`                 | no       | Label (ready-to-insert HTML)                  |
+| `id`             | `string`                 | no       | Stable id                                     |
+| `group`          | `string`                 | no       | Limit to one swimlane; omit for full-width    |
+| `className`      | `string`                 | no       | CSS class                                     |
+| `style`          | `string`                 | no       | e.g. `background-color: rgba(0,0,0,0.08)`     |
+| `dataAttributes` | `Record<string, string>` | no       | Extra `data-*` attributes (no `data-` prefix) |
+
+`className` and `dataAttributes` are applied to the
+`.vis-item.vis-background` element. `content` is inserted as HTML.
+
+When rendered through the Bases or `api.dv` adapters, backgrounds are sorted
+by start (then end) inside each group. The adapters append
+`timeline-background` plus `timeline-background-odd` /
+`timeline-background-even` to `className`, and put a 1-based `data-order`,
+tags and frontmatter into `dataAttributes`, so adjacent bands can be styled
+differently even when their colors match.
 
 #### `TimelineMarkerInput`
 
@@ -99,9 +110,14 @@ type TimelineRenderInput = {
 | Field       | Type     | Required | Description                                   |
 | ----------- | -------- | -------- | --------------------------------------------- |
 | `id`        | `string` | yes      | Swimlane id (matches item/background `group`) |
-| `content`   | `string` | yes      | Left-side swimlane label                      |
+| `content`   | `string` | yes      | Left-side swimlane label (HTML)               |
 | `className` | `string` | no       | CSS class                                     |
 | `order`     | `number` | no       | Swimlane order                                |
+
+Each swimlane gets `timeline-group` and `timeline-group-{id}` classes, where
+`{id}` is sanitized for CSS (whitespace and punctuation become `-`). Extra
+properties are written as `data-*` attributes on the swimlane's label and
+background; `id`, `content`, `className` and `order` are reserved.
 
 ---
 

@@ -64,7 +64,10 @@ describe('pagesToRenderInput group override', () => {
 
 		expect(input.groups).toEqual([
 			{ id: 'dynasty-tang', content: '唐朝' },
-			{ id: 'dynasty-song', content: 'dynasty-song' },
+			{
+				id: 'dynasty-song',
+				content: '<div class="timeline-group">dynasty-song</div>',
+			},
 		]);
 	});
 

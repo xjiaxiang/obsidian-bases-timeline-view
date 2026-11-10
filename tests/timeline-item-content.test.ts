@@ -1,19 +1,23 @@
 import { describe, expect, it } from 'vitest';
 import {
+	buildBackgroundClassName,
+	buildBackgroundContentHtml,
+	buildBackgroundDataAttributes,
+	buildGroupContentHtml,
 	buildItemContentHtml,
 	escapeHtml,
 } from '../src/helper/timeline-item-content';
 
 describe('buildItemContentHtml', () => {
 	describe('basic structure', () => {
-		it('wraps path and title in a timeline-item with internal-link', () => {
+		it('wraps path and title in a timeline-item-content with internal-link', () => {
 			expect(
 				buildItemContentHtml({
 					path: 'notes/a.md',
 					title: 'Note A',
 				}),
 			).toBe(
-				'<div class="timeline-item"><br><a href="notes/a.md" class="internal-link" data-href="notes/a.md">Note A</a></div>',
+				'<div class="timeline-item-content"><br><a href="notes/a.md" class="internal-link" data-href="notes/a.md">Note A</a></div>',
 			);
 		});
 	});
@@ -107,7 +111,7 @@ describe('buildItemContentHtml', () => {
 			).toContain('data-status="done"');
 		});
 
-		it('serializes array and object frontmatter values', () => {
+		it('serializes arrays and skips object frontmatter values', () => {
 			const html = buildItemContentHtml({
 				path: 'notes/a.md',
 				title: 'Note A',
@@ -117,7 +121,7 @@ describe('buildItemContentHtml', () => {
 				},
 			});
 			expect(html).toContain('data-authors="Ada Bob"');
-			expect(html).toContain('data-meta="{&quot;kind&quot;:&quot;event&quot;}"');
+			expect(html).not.toContain('data-meta');
 		});
 
 		it('skips null and undefined frontmatter values', () => {
@@ -162,6 +166,68 @@ describe('buildItemContentHtml', () => {
 				'data-note="say &quot;hi&quot; &amp; &lt;bye&gt;"',
 			);
 		});
+	});
+});
+
+describe('buildGroupContentHtml', () => {
+	it('wraps and escapes the group label', () => {
+		expect(buildGroupContentHtml('A <B>')).toBe(
+			'<div class="timeline-group">A &lt;B&gt;</div>',
+		);
+	});
+});
+
+describe('buildBackgroundClassName', () => {
+	it('adds timeline-background and odd/even classes', () => {
+		expect(buildBackgroundClassName(undefined, 1)).toBe(
+			'timeline-background timeline-background-odd',
+		);
+		expect(buildBackgroundClassName(undefined, 2)).toBe(
+			'timeline-background timeline-background-even',
+		);
+	});
+
+	it('keeps caller classes', () => {
+		expect(buildBackgroundClassName('custom', 3)).toBe(
+			'custom timeline-background timeline-background-odd',
+		);
+	});
+
+	it('omits the order class when no order is known', () => {
+		expect(buildBackgroundClassName('custom')).toBe(
+			'custom timeline-background',
+		);
+	});
+});
+
+describe('buildBackgroundContentHtml', () => {
+	it('escapes the background label', () => {
+		expect(buildBackgroundContentHtml('Q1 & Q2')).toBe('Q1 &amp; Q2');
+	});
+
+	it('keeps empty content empty', () => {
+		expect(buildBackgroundContentHtml()).toBe('');
+		expect(buildBackgroundContentHtml('')).toBe('');
+	});
+});
+
+describe('buildBackgroundDataAttributes', () => {
+	it('adds order, tags and frontmatter values', () => {
+		expect(
+			buildBackgroundDataAttributes(
+				{ status: 'done' },
+				['project', 'q1'],
+				1,
+			),
+		).toEqual({
+			order: '1',
+			tags: 'project q1',
+			status: 'done',
+		});
+	});
+
+	it('omits order when none is known', () => {
+		expect(buildBackgroundDataAttributes({}, [])).toEqual({});
 	});
 });
 

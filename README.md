@@ -145,45 +145,200 @@ timelineType: point
 
 ### Custom styles
 
-Use Obsidian's built-in style extensions together with this plugin's hooks to customize the timeline look.
+The plugin exposes three kinds of CSS hooks, which can be used separately or
+together. All plugin-owned hooks live under the `.timeline` root class. Prefer
+these classes over vis-timeline internals such as `.vis-item`: the plugin
+guarantees its own classes, while vis-timeline's DOM may change between
+versions.
 
-#### Style via `cssclasses`
+> [!warning] Upgrading from a version below 1.9
+> CSS snippets written for earlier versions need updating:
+>
+> - Select item elements with `.timeline-item` instead of `.vis-item`.
+> - The wrapper around item content was renamed from `.timeline-item` to
+>   `.timeline-item-content`.
+> - For example, `.vis-item:has(.timeline-item[data-status='done'])` becomes
+>   `.timeline-item:has(.timeline-item-content[data-status='done'])`.
 
-By default the plugin reads Obsidian's built-in `cssclasses` and sets them as the vis-timeline item/background `className`. You can also point the **class name field** in the view to another property.
+1. **Item class**: the note's `cssclasses` (or the configured **class name field**) is written to the item's `className` together with `timeline-item`; target `.timeline-item`.
+2. **Item data attributes**: the note's tags and frontmatter are injected into the `.timeline-item-content` wrapper inside the item content as `data-tags` and `data-{field}`.
+3. **Background**: the background item additionally gets `timeline-background`, `timeline-background-odd` / `timeline-background-even`; its tags and frontmatter are written as `data-*` attributes on that same element, plus a 1-based `data-order`.
+
+> Value rules: tags are space-separated in `data-tags`; arrays are joined with spaces; `Date` values use `YYYY-MM-DD`; object values are skipped.
+
+#### 1. Item class
 
 ```markdown
+---
 cssclasses:
-
-- phase-bg
+  - phase-bg
+---
 ```
 
 ```css
-.vis-item.phase-bg {
+.timeline-item.phase-bg {
 	background-color: rgba(211, 211, 211, 0.45);
 	border-color: #d3d3d3;
 }
 ```
 
-#### Style via data attributes
+#### 2. Item data attributes
 
-Timeline items also expose tags and frontmatter as `data-` attributes for CSS selectors, for example:
+Item attributes live on the `.timeline-item-content` wrapper, so use `:has()`
+on the item:
 
 ```css
-.vis-item:has(.timeline-item[data-tags~='#projects']) {
+.timeline-item:has(.timeline-item-content[data-tags~='#projects']) {
 	border-width: 1px;
 	border-style: solid;
 }
 
-.vis-item:has(
-	.timeline-item[data-tags~='#projects'][data-status='not started']
-) {
-	background-color: rgba(211, 211, 211, 0.45);
-	border-color: #d3d3d3;
+.timeline-item:has(.timeline-item-content[data-status='not started']) {
+	border-style: dashed;
 }
 ```
 
-- `#projects` is a tag; replace it with any tag
-- `data-status="not started"` comes from frontmatter (`status`); replace it with any field
+#### 3. Background
+
+Background classes and attributes are on the background item itself, so
+`:has()` is not needed:
+
+```css
+.timeline-background-odd {
+	background-color: rgba(0, 0, 0, 0.06) !important;
+}
+
+.timeline-background-even {
+	background-color: rgba(0, 0, 0, 0.12) !important;
+}
+
+.timeline-background[data-phase='planning'] {
+	// custom styles
+}
+
+.timeline-background[data-order='3'] {
+	// custom styles
+}
+```
+
+Backgrounds are sorted by start/end and numbered from 1 inside each swimlane;
+a full-width background (no group) forms its own sequence. `cssclasses` is also
+appended to the background's `className`.
+
+#### Complete example
+
+Assume a Base that renders notes tagged `#phase` as backgrounds:
+
+```base
+filters:
+  or:
+    - file.tags.contains("moment")
+    - file.tags.contains("phase")
+formulas:
+  isPhase: 'file.tags.contains("phase")'
+views:
+  - type: timeline-view
+    name: roadmap
+    backgroundWhen: formula.isPhase
+```
+
+A regular event note:
+
+```markdown
+---
+start: 2025-01-05
+end: 2025-01-09
+content: Design review
+status: not started
+cssclasses:
+  - phase-bg
+tags:
+  - projects
+---
+```
+
+A phase background note:
+
+```markdown
+---
+start: 2025-01-01
+end: 2025-03-31
+content: Q1
+phase: planning
+tags:
+  - phase
+---
+```
+
+Add a CSS snippet:
+
+```css
+/* 1. Item class */
+.timeline-item.phase-bg {
+	background-color: rgba(211, 211, 211, 0.45);
+	border-color: #d3d3d3;
+}
+
+/* 2. Item data attributes (on the .timeline-item-content wrapper) */
+.timeline-item:has(.timeline-item-content[data-tags~='#projects']) {
+	border-width: 1px;
+	border-style: solid;
+}
+
+.timeline-item:has(.timeline-item-content[data-status='not started']) {
+	border-style: dashed;
+}
+
+/* 3. Background classes and attributes (on the background item itself) */
+.timeline-background.timeline-background-odd {
+	background-color: rgba(0, 0, 0, 0.06);
+}
+
+.timeline-background.timeline-background-even {
+	background-color: rgba(0, 0, 0, 0.12);
+}
+
+.timeline-background[data-phase='planning'] {
+	border-color: #7aa2f7;
+}
+
+.timeline-background[data-order='1'] {
+	border-left-width: 3px;
+}
+```
+
+The rendered DOM looks roughly like this:
+
+```html
+<div class="timeline">
+	<!-- Regular event: class on .timeline-item, data-* on .timeline-item-content -->
+	<div class="vis-item vis-range phase-bg timeline-item">
+		<div class="vis-item-overflow">
+			<div class="vis-item-content">
+				<div
+					class="timeline-item-content"
+					data-tags="#projects"
+					data-status="not started"
+				>
+					…
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<!-- Background: classes and data-* all on the background item -->
+	<div
+		class="vis-item vis-background timeline-background timeline-background-odd"
+		data-order="1"
+		data-tags="#phase"
+		data-phase="planning"
+	>
+		<div class="vis-item-overflow">
+			<div class="vis-item-content">Q1</div>
+		</div>
+	</div>
+</div>
+```
 
 ## API
 

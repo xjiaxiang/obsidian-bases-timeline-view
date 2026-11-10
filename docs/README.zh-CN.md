@@ -147,45 +147,191 @@ timelineType: point
 
 ### 自定义样式
 
-利用Obsidian内置的样式扩展能力和时间线插件提供的扩展能力，可以自定义时间线的样式。
+插件提供三类 CSS 钩子，可以单独使用，也可以组合使用。插件自己的钩子都位于 `.timeline` 根类下。请优先使用插件提供的类，而不是 `.vis-item` 等 vis-timeline 内部类：插件保证自己的类名稳定，vis-timeline 的 DOM 结构可能随版本变化。
 
-#### 通过 `cssclasses` 进行样式扩展
+> [!warning] 从 1.9 之前的版本升级
+> 旧版本编写的 CSS 片段需要相应修改：
+>
+> - 选取 item 元素时，用 `.timeline-item` 代替 `.vis-item`。
+> - 条目内容的包装层从 `.timeline-item` 改名为 `.timeline-item-content`。
+> - 例如 `.vis-item:has(.timeline-item[data-status='done'])` 需要改为
+>   `.timeline-item:has(.timeline-item-content[data-status='done'])`。
 
-默认读取 Obsidian 内置的 `cssclasses`，并设置为 vis-timeline 条目/背景的 `className`。也可在视图中把 **class name field** 指向其他属性。
+1. **Item class**：读取笔记的 `cssclasses`（或视图中配置的 **class name field**），连同 `timeline-item` 一起写入 item 的 `className`；使用 `.timeline-item` 选取。
+2. **Item data 属性**：把笔记的 tags 和 frontmatter 注入条目内容的 `.timeline-item-content` 包装层，生成 `data-tags` 和 `data-{字段}`。
+3. **Background**：背景条目会额外获得 `timeline-background`、`timeline-background-odd` / `timeline-background-even`；同时 tags 和 frontmatter 会作为 `data-*` 属性写在同一个元素上，并额外包含从 1 开始的 `data-order`。
+
+> 属性值规则：tags 用空格分隔写入 `data-tags`；数组值用空格连接；`Date` 输出为 `YYYY-MM-DD`；对象值会被跳过。
+
+#### 1. Item class
 
 ```markdown
+---
 cssclasses:
-
-- phase-bg
+  - phase-bg
+---
 ```
 
 ```css
-.vis-item.phase-bg {
+.timeline-item.phase-bg {
 	background-color: rgba(211, 211, 211, 0.45);
 	border-color: #d3d3d3;
 }
 ```
 
-#### 通过 data 属性进行样式扩展
+#### 2. Item data 属性
 
-时间线条目内部还会挂上 tags 与 frontmatter 的 `data-` 属性，可用 CSS 选择，例如：
+条目属性位于 `.timeline-item-content` 包装层，因此需要在 item 上使用 `:has()`：
 
 ```css
-.vis-item:has(.timeline-item[data-tags~='#projects']) {
+.timeline-item:has(.timeline-item-content[data-tags~='#projects']) {
 	border-width: 1px;
 	border-style: solid;
 }
 
-.vis-item:has(
-	.timeline-item[data-tags~='#projects'][data-status='not started']
-) {
-	background-color: rgba(211, 211, 211, 0.45);
-	border-color: #d3d3d3;
+.timeline-item:has(.timeline-item-content[data-status='not started']) {
+	border-style: dashed;
 }
 ```
 
-- `#projects` 是标签，可换成任意 tag
-- `data-status="not started"` 来自 frontmatter（status），可换成任意字段
+#### 3. Background
+
+背景的类和属性直接位于背景条目本身，不需要 `:has()`：
+
+```css
+.timeline-background-odd {
+	background-color: rgba(0, 0, 0, 0.06) !important;
+}
+
+.timeline-background-even {
+	background-color: rgba(0, 0, 0, 0.12) !important;
+}
+
+.timeline-background[data-phase='planning'] {
+	// 自定义样式
+}
+
+.timeline-background[data-order='3'] {
+	// 自定义样式
+}
+```
+
+同一泳道内的背景会按 start/end 排序并从 1 重新编号；没有分组的全宽背景自成一条序列。`cssclasses` 同样会附加到背景的 `className` 上。
+
+#### 完整示例
+
+假设有一个 Base，把带 `#phase` 标签的笔记画成背景：
+
+```base
+filters:
+  or:
+    - file.tags.contains("moment")
+    - file.tags.contains("phase")
+formulas:
+  isPhase: 'file.tags.contains("phase")'
+views:
+  - type: timeline-view
+    name: roadmap
+    backgroundWhen: formula.isPhase
+```
+
+普通事件笔记：
+
+```markdown
+---
+start: 2025-01-05
+end: 2025-01-09
+content: 设计评审
+status: not started
+cssclasses:
+  - phase-bg
+tags:
+  - projects
+---
+```
+
+阶段背景笔记：
+
+```markdown
+---
+start: 2025-01-01
+end: 2025-03-31
+content: Q1
+phase: planning
+tags:
+  - phase
+---
+```
+
+添加一个 CSS snippet：
+
+```css
+/* 1. Item class */
+.timeline-item.phase-bg {
+	background-color: rgba(211, 211, 211, 0.45);
+	border-color: #d3d3d3;
+}
+
+/* 2. Item data 属性（在 .timeline-item-content 包装层上） */
+.timeline-item:has(.timeline-item-content[data-tags~='#projects']) {
+	border-width: 1px;
+	border-style: solid;
+}
+
+.timeline-item:has(.timeline-item-content[data-status='not started']) {
+	border-style: dashed;
+}
+
+/* 3. Background 类和属性（在背景条目本身） */
+.timeline-background.timeline-background-odd {
+	background-color: rgba(0, 0, 0, 0.06);
+}
+
+.timeline-background.timeline-background-even {
+	background-color: rgba(0, 0, 0, 0.12);
+}
+
+.timeline-background[data-phase='planning'] {
+	border-color: #7aa2f7;
+}
+
+.timeline-background[data-order='1'] {
+	border-left-width: 3px;
+}
+```
+
+渲染后大致为：
+
+```html
+<div class="timeline">
+	<!-- 普通事件：class 在 .timeline-item，data-* 在 .timeline-item-content -->
+	<div class="vis-item vis-range phase-bg timeline-item">
+		<div class="vis-item-overflow">
+			<div class="vis-item-content">
+				<div
+					class="timeline-item-content"
+					data-tags="#projects"
+					data-status="not started"
+				>
+					…
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<!-- 背景：class 和 data-* 都在背景条目本身 -->
+	<div
+		class="vis-item vis-background timeline-background timeline-background-odd"
+		data-order="1"
+		data-tags="#phase"
+		data-phase="planning"
+	>
+		<div class="vis-item-overflow">
+			<div class="vis-item-content">Q1</div>
+		</div>
+	</div>
+</div>
+```
 
 ## API
 

@@ -1,12 +1,19 @@
 import type { App } from 'obsidian';
 import { getAllTags, TFile } from 'obsidian';
 import type { TimelineOptions } from 'vis-timeline/esnext';
+import { orderBackgroundsByGroup } from '../helper/background-order';
 import { drawVisTimeline } from '../helper/draw-vis-timeline';
 import { logger } from '../helper/logger';
 import { normalizeVisDate } from '../helper/normalize-vis-date';
 import { resolveTimelineGroupId, normalizeGroupKey } from '../helper/timeline-group';
 import { reattachTimelineLinkHandlers } from '../helper/timeline-link-handlers';
-import { buildItemContentHtml } from '../helper/timeline-item-content';
+import {
+	buildBackgroundClassName,
+	buildBackgroundContentHtml,
+	buildBackgroundDataAttributes,
+	buildGroupContentHtml,
+	buildItemContentHtml,
+} from '../helper/timeline-item-content';
 import { normalizeItemType } from '../helper/timeline-item-type';
 import type {
 	TimelineBackgroundInput,
@@ -23,6 +30,8 @@ export type DataviewPageLike = Record<string, unknown> & {
 	file?: {
 		path?: string;
 		name?: string;
+		frontmatter?: Record<string, unknown>;
+		etags?: string[];
 	};
 	/**
 	 * Manual swimlane id (own property). Only used when
@@ -93,6 +102,10 @@ type MappedPageFields = {
 	group?: string;
 	startLabel?: string;
 	endLabel?: string;
+	// original info
+	path?: string;
+	frontmatter?: Record<string, unknown>;
+	tags?: string[];
 };
 
 /**
@@ -117,10 +130,21 @@ export function pagesToRenderInput(
 ): TimelineRenderInput {
 	const fields = normalizeFields(sources.fields);
 	const items: TimelineItemInput[] = [];
-	const backgrounds: TimelineBackgroundInput[] = [];
 	const markers: TimelineMarkerInput[] = [];
 	const groupIds = new Set<string>();
 
+	type BackgroundDraft = {
+		id?: string;
+		start: string;
+		end: string;
+		content: string;
+		group?: string;
+		className?: string;
+		frontmatter?: Record<string, unknown>;
+		tags?: string[];
+	};
+
+	// timeline item data
 	const mappedItems: MappedPageFields[] = [];
 	for (const page of toArray(sources.items)) {
 		const mapped = mapPageFields(page, fields);
@@ -155,7 +179,7 @@ export function pagesToRenderInput(
 			groupIds.add(group);
 		}
 
-		const { frontmatter, tags } = readMetaFromApp(app, mapped.id);
+		const { frontmatter, tags } = readMetaFromApp(app, mapped.path);
 		items.push({
 			id: mapped.id,
 			start: mapped.start!,
@@ -173,24 +197,43 @@ export function pagesToRenderInput(
 				tags,
 			}),
 			group,
-			className: mapped.className,
+			className: `${mapped.className ? mapped.className : ''} timeline-item`,
 		});
 	}
 
+	const backgroundDrafts: BackgroundDraft[] = [];
 	for (const mapped of mappedBackgrounds) {
 		const group = resolveTimelineGroupId(mapped.group, hasGrouping);
 		if (group) {
 			groupIds.add(group);
 		}
-		backgrounds.push({
+		backgroundDrafts.push({
 			id: mapped.id,
 			start: mapped.start!,
 			end: mapped.end!,
 			content: mapped.content,
 			group,
 			className: mapped.className,
+			frontmatter: mapped.frontmatter,
+			tags: mapped.tags,
 		});
 	}
+
+	const backgrounds: TimelineBackgroundInput[] = orderBackgroundsByGroup(
+		backgroundDrafts,
+	).map(({ background, order }) => ({
+		id: background.id,
+		start: background.start,
+		end: background.end,
+		content: buildBackgroundContentHtml(background.content),
+		dataAttributes: buildBackgroundDataAttributes(
+			background.frontmatter ?? {},
+			background.tags ?? [],
+			order,
+		),
+		group: background.group,
+		className: buildBackgroundClassName(background.className, order),
+	}));
 
 	for (const entry of toArray(sources.markers)) {
 		if (isMarkerLiteral(entry)) {
@@ -223,7 +266,7 @@ export function pagesToRenderInput(
 	);
 	for (const id of groupIds) {
 		if (!groupsById.has(id)) {
-			groupsById.set(id, { id, content: id });
+			groupsById.set(id, { id, content: buildGroupContentHtml(id) });
 		}
 	}
 	const groups = groupsById.size > 0 ? [...groupsById.values()] : undefined;
@@ -244,6 +287,9 @@ function normalizeFields(fields?: DataviewFieldMap): DataviewFieldMap {
 	};
 }
 
+/**
+ * Maps a Dataview page to the timeline item fields.
+ */
 function mapPageFields(page: DataviewPageLike, fields: DataviewFieldMap) {
 	const id = page.file?.path;
 	const start = fields.start
@@ -275,6 +321,11 @@ function mapPageFields(page: DataviewPageLike, fields: DataviewFieldMap) {
 		group,
 		startLabel: startLabel || start,
 		endLabel: endLabel || end,
+
+		// original info
+		path: page.file?.path,
+		frontmatter: page.file?.frontmatter as Record<string, unknown> | undefined,
+		tags: page.file?.etags as string[] | undefined,
 	};
 }
 
