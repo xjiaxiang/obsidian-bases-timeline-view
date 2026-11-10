@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.9.0](https://github.com/xjiaxiang/obsidian-bases-timeline-view/compare/1.8.0...1.9.0) (2026-11-10)
+
+
+### Features
+
+* enhance timeline background rendering with data attributes and sorting ([e1a469a](https://github.com/xjiaxiang/obsidian-bases-timeline-view/commit/e1a469a2d501cbf74e0f800a1fb7c29b4e4f2327))
+
 ## [1.8.0](https://github.com/xjiaxiang/obsidian-bases-timeline-view/compare/1.7.0...1.8.0) (2026-10-24)
 
 
